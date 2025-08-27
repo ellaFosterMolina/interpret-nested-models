@@ -22,8 +22,10 @@ model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
 
 ## Visualizing Model 1: The nested model with one x variable
 
+For reference, the equation for the nested model is:
+
 \begin{align}
-y =& \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}
+y =& \beta_1 x_1 + \beta_0 +\epsilon. \label{ypredbyx1}
 \end{align}
 
 The standard way to visualize Model \ref{ypredbyx1} is in 2 dimensions using a scatterplot with a regression line.
@@ -38,6 +40,8 @@ la_counties %>%
        x = "County median income")
 ```
 ## Visualizing Model 2: The model with two x variables
+
+For reference, the equation for the full model is:
 
 \begin{align}
 y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}
@@ -92,7 +96,8 @@ predicted_gop <- predict(object = model1, newdata = income_seq,
 ```{r}
 predicted_prcnt_black <- predict(object = model3, newdata = income_seq)
 ```
-We then turn these values into a dataframe that `plot_ly` can use to create lines in 3D.
+
+We then turn these values into a dataframe that __regress_3d__ can use to create lines in 3D.
 
 ```{r}
 simulated_data_nested_model <- data.frame(median_income16_1k = income_seq,
@@ -145,7 +150,8 @@ income_edu_data <- data.frame(median_income16_1k = income_seq,
 predicted_rshift <- predict(object = model2, newdata = income_edu_data, interval = "confidence") %>%
   as.data.frame(.)
 ```
-We then turn these values into a dataframe that `plot_ly` can use to create lines in 3D.
+
+We then turn these values into a dataframe that __regress_3d__ can use to create lines in 3D.
 
 ```{r}
 simulated_data_model2 <- data.frame(median_income16_1k = income_seq,

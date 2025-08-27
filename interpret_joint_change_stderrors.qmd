@@ -20,6 +20,27 @@ model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
 
 # Joint Changes and Standard Errors
 
+For reference, the nested model is defined as:
+
+\begin{align}
+y =& \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}\\
+\text{r-shift} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon \nonumber.
+\end{align}
+
+The full model is defined as:
+
+\begin{align}
+y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}\\
+\text{r-shift} =& \beta'_1*\text{median-income16-1k} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'. \nonumber
+\end{align}
+
+The model that defines the direction of the change in $y$ in the nested model is:
+
+\begin{align}
+  x_2 =& \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}\\
+\text{% Black} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon. \nonumber
+\end{align}
+
 ## Interpreting joint changes in $x_1$ and $x_2$
 
 The nested model (Model \ref{ypredbyx1}) and the direction plotted in Model \ref{ypredbyx1x2} both reflect the change in `prcnt_GOP16` as `median_income16_1k` and `prcnt_black` jointly change. The joint change is specified by Model \ref{x1predbyx2}, where a one unit change in `median_income16_1k` (\$1,000) is associated with a **-0.707\%** change in the percent of the county identifies as Black (`prcnt_black`).
@@ -64,7 +85,7 @@ model_blackresids <- lm(prcnt_GOP16~median_income16_1k+resid_black_predby_income
 
 Finally, we compare the results from three models:
   
-  * Model \ref{ypredbyx1}: `prcnt_GOP16` ~ `median_income16_1k`
+* Model \ref{ypredbyx1}: `prcnt_GOP16` ~ `median_income16_1k`
 * Model \ref{ypredbyx1x2}: `prcnt_GOP16` ~ `median_income16_1k` + `prcnt_black`
 * Model \ref{ypredbyx1resids}: `prcnt_GOP16` ~ `median_income16_1k` + `resid_black_predby_income`
 
@@ -83,6 +104,7 @@ stargazer(model1, model2, model_blackresids,
 * The indicators of overall model fit are identical for Models \ref{ypredbyx1x2} and \ref{ypredbyx1resids}. 
 
 The proof of how the standard error for `median_income_1k` in Model \ref{ypredbyx1resids} relates to the standard error of the green line plotted in the figure above is in progress.
+
 ```{r, include = F, eval=F}
 #mean centering variables
 x1 <-la_counties$median_income16_1k - mean(la_counties$median_income16_1k , na.rm=T)
