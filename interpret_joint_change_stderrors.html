@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Joint Changes and Standard Errors – Interpreting and Visualizing Nested Models in 3D</title>
+<title>3&nbsp; Joint Changes and Standard Errors – Interpreting and Visualizing Nested Models in 3D</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -156,7 +156,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./interpret_joint_change_stderrors.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./interpret_joint_change_stderrors.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -184,19 +184,19 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Introduction</span></a>
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Defining and Estimating the Nested Models</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./visualize_models_3d.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./interpret_joint_change_stderrors.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></span></a>
   </div>
 </li>
     </ul>
@@ -209,11 +209,11 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#interpreting-joint-changes-in-x_1-and-x_2" id="toc-interpreting-joint-changes-in-x_1-and-x_2" class="nav-link active" data-scroll-target="#interpreting-joint-changes-in-x_1-and-x_2"><span class="header-section-number">2.1</span> Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></a></li>
-  <li><a href="#a-possible-approach-to-extracting-standard-errors" id="toc-a-possible-approach-to-extracting-standard-errors" class="nav-link" data-scroll-target="#a-possible-approach-to-extracting-standard-errors"><span class="header-section-number">2.2</span> A Possible Approach to Extracting Standard Errors</a>
+  <li><a href="#interpreting-joint-changes-in-x_1-and-x_2" id="toc-interpreting-joint-changes-in-x_1-and-x_2" class="nav-link active" data-scroll-target="#interpreting-joint-changes-in-x_1-and-x_2">Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></a></li>
+  <li><a href="#a-possible-approach-to-extracting-standard-errors" id="toc-a-possible-approach-to-extracting-standard-errors" class="nav-link" data-scroll-target="#a-possible-approach-to-extracting-standard-errors">A Possible Approach to Extracting Standard Errors</a>
   <ul class="collapse">
-  <li><a href="#residuals-model" id="toc-residuals-model" class="nav-link" data-scroll-target="#residuals-model"><span class="header-section-number">2.2.1</span> Residuals model</a></li>
-  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways"><span class="header-section-number">2.2.2</span> Takeaways</a></li>
+  <li><a href="#residuals-model" id="toc-residuals-model" class="nav-link" data-scroll-target="#residuals-model">Residuals model</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -223,7 +223,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></h1>
 </div>
 
 
@@ -240,8 +240,23 @@ window.Quarto = {
 </header>
 
 
-<section id="interpreting-joint-changes-in-x_1-and-x_2" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="interpreting-joint-changes-in-x_1-and-x_2"><span class="header-section-number">2.1</span> Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></h2>
+<p>For reference, the nested model is defined as:</p>
+<p><span class="math display">\[\begin{align}
+y =&amp; \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}\\
+\text{r-shift} =&amp; \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon \nonumber.
+\end{align}\]</span></p>
+<p>The full model is defined as:</p>
+<p><span class="math display">\[\begin{align}
+y =&amp; \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}\\
+\text{r-shift} =&amp; \beta'_1*\text{median-income16-1k} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'. \nonumber
+\end{align}\]</span></p>
+<p>The model that defines the direction of the change in <span class="math inline">\(y\)</span> in the nested model is:</p>
+<p><span class="math display">\[\begin{align}
+  x_2 =&amp; \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}\\
+\text{% Black} =&amp; \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon. \nonumber
+\end{align}\]</span></p>
+<section id="interpreting-joint-changes-in-x_1-and-x_2" class="level2">
+<h2 class="anchored" data-anchor-id="interpreting-joint-changes-in-x_1-and-x_2">Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></h2>
 <p>The nested model (Model <span class="math inline">\(\ref{ypredbyx1}\)</span>) and the direction plotted in Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> both reflect the change in <code>prcnt_GOP16</code> as <code>median_income16_1k</code> and <code>prcnt_black</code> jointly change. The joint change is specified by Model <span class="math inline">\(\ref{x1predbyx2}\)</span>, where a one unit change in <code>median_income16_1k</code> ($1,000) is associated with a <strong>-0.707%</strong> change in the percent of the county identifies as Black (<code>prcnt_black</code>).</p>
 <p>Therefore, we can say that the nested model reflects that a joint one unit change in <code>median_income16_1k</code> ($1,000) <strong>and</strong> a <strong>-0.707%</strong> change in <code>prcnt_black</code> predicts a 0.364 unit change in <code>prcnt_GOP16</code>.</p>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(model1, model2, model3, </span>
@@ -489,11 +504,11 @@ F Statistic
 </tr>
 </tbody></table>
 </section>
-<section id="a-possible-approach-to-extracting-standard-errors" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="a-possible-approach-to-extracting-standard-errors"><span class="header-section-number">2.2</span> A Possible Approach to Extracting Standard Errors</h2>
+<section id="a-possible-approach-to-extracting-standard-errors" class="level2">
+<h2 class="anchored" data-anchor-id="a-possible-approach-to-extracting-standard-errors">A Possible Approach to Extracting Standard Errors</h2>
 <p>The standard errors for the <span style="color: green;">green</span> line above that shows the confidence interval of Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> are difficult to recover using mainstream statistical methods.</p>
-<section id="residuals-model" class="level3" data-number="2.2.1">
-<h3 data-number="2.2.1" class="anchored" data-anchor-id="residuals-model"><span class="header-section-number">2.2.1</span> Residuals model</h3>
+<section id="residuals-model" class="level3">
+<h3 class="anchored" data-anchor-id="residuals-model">Residuals model</h3>
 <p>A similarly small standard error on <code>median_income16_1k</code> can be recovered by estimating <code>prcnt_GOP16</code> using both <code>median_income16_1k</code> and the <em>residuals</em> of <code>prcnt_black</code> from Model <span class="math inline">\(\ref{x1predbyx2}\)</span>.</p>
 <p>First, add a column of residual values to <code>la_counties</code>.</p>
 <div class="cell">
@@ -791,8 +806,8 @@ F Statistic
 </tr>
 </tbody></table>
 </section>
-<section id="takeaways" class="level3" data-number="2.2.2">
-<h3 data-number="2.2.2" class="anchored" data-anchor-id="takeaways"><span class="header-section-number">2.2.2</span> Takeaways</h3>
+<section id="takeaways" class="level3">
+<h3 class="anchored" data-anchor-id="takeaways">Takeaways</h3>
 <ul>
 <li>The coefficients for <code>median_income16_1k</code> in Models <span class="math inline">\(\ref{ypredbyx1}\)</span> and <span class="math inline">\(\ref{ypredbyx1resids}\)</span> are identical.</li>
 <li>As expected, the standard errors are different in Models <span class="math inline">\(\ref{ypredbyx1}\)</span> and <span class="math inline">\(\ref{ypredbyx1resids}\)</span>.</li>
@@ -1225,7 +1240,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./visualize_models_3d.html" class="pagination-link" aria-label="Visualizing the Nested Model Inside the Full Model">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
