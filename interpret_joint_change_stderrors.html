@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Ella Foster-Molina">
 
-<title>Interpreting and Visualizing Nested Models in 3D</title>
+<title>2&nbsp; Joint Changes and Standard Errors – Interpreting and Visualizing Nested Models in 3D</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,7 +64,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./visualize_models_3d.html" rel="next">
+<link href="./visualize_models_3d.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -157,7 +156,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Introduction</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./interpret_joint_change_stderrors.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -184,7 +183,7 @@ window.Quarto = {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
@@ -196,7 +195,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./interpret_joint_change_stderrors.html" class="sidebar-item-text sidebar-link">
+  <a href="./interpret_joint_change_stderrors.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></span></a>
   </div>
 </li>
@@ -210,11 +209,11 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <li><a href="#interpreting-joint-changes-in-x_1-and-x_2" id="toc-interpreting-joint-changes-in-x_1-and-x_2" class="nav-link active" data-scroll-target="#interpreting-joint-changes-in-x_1-and-x_2"><span class="header-section-number">2.1</span> Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></a></li>
+  <li><a href="#a-possible-approach-to-extracting-standard-errors" id="toc-a-possible-approach-to-extracting-standard-errors" class="nav-link" data-scroll-target="#a-possible-approach-to-extracting-standard-errors"><span class="header-section-number">2.2</span> A Possible Approach to Extracting Standard Errors</a>
   <ul class="collapse">
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
-  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
-  <li><a href="#estimating-the-models-in-r" id="toc-estimating-the-models-in-r" class="nav-link" data-scroll-target="#estimating-the-models-in-r">Estimating the Models in R</a></li>
+  <li><a href="#residuals-model" id="toc-residuals-model" class="nav-link" data-scroll-target="#residuals-model"><span class="header-section-number">2.2.1</span> Residuals model</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways"><span class="header-section-number">2.2.2</span> Takeaways</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -224,19 +223,13 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Interpreting and Visualizing Nested Models in 3D</h1>
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Joint Changes and Standard Errors</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Ella Foster-Molina </p>
-          </div>
-  </div>
     
   
     
@@ -247,76 +240,565 @@ window.Quarto = {
 </header>
 
 
-<section id="introduction" class="level1 unnumbered">
-<h1 class="unnumbered">Introduction</h1>
-<p>A model nested within another model is one where the nested model has a subset of the variables in the larger model. This article will visualize these models using a simple case where the nested model has one <span class="math inline">\(x\)</span> variable, and the full model has two <span class="math inline">\(x\)</span> variables.</p>
-<p>We start by defining Model <span class="math inline">\(\ref{ypredbyx1}\)</span></p>
-<p><span class="math display">\[\begin{align}
-y =&amp; \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}
-\end{align}\]</span></p>
-<p>Model <span class="math inline">\(\ref{ypredbyx1}\)</span> is nested within Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> with two <span class="math inline">\(x\)</span> variables;</p>
-<p><span class="math display">\[\begin{align}
-y =&amp; \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}
-\end{align}\]</span></p>
-<p>This article will demonstrate how to visualize the nested model inside a regression surface of Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> using the R package <strong>regress3d</strong>. Two observations emerge from this exercise.</p>
-<ol type="1">
-<li>The estimated values for <span class="math inline">\(y\)</span> from the nested model are identical to the estimated values of the full model in the direction of Model <span class="math inline">\(\ref{x1predbyx2}\)</span>: the best fit line for <span class="math inline">\(x_2\)</span> estimated by <span class="math inline">\(x_1\)</span>. <span class="math display">\[\begin{align}
-  x_2 =&amp; \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}
-\end{align}\]</span></li>
-<li>The estimated standard errors for <span class="math inline">\(y\)</span> from the nested model are <strong>not</strong> identical to the estimated standard errors for <span class="math inline">\(y\)</span> for the full model in the direction of the best fit line for the model.</li>
-</ol>
-<p>Therefore, the estimated values for the nested model can be understood as a direction in the regression surface of the larger model. The coefficient <span class="math inline">\(\beta_1\)</span> in Model <span class="math inline">\(\ref{ypredbyx1}\)</span> is the <strong>joint</strong> effect of <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> where the relative contributions of <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> are defined by Model <span class="math inline">\(\ref{x1predbyx2}\)</span>. This occurs despite the fact that Model <span class="math inline">\(\ref{ypredbyx1}\)</span> does not use any information from <span class="math inline">\(x_2\)</span> to estimate the <span class="math inline">\(y\)</span> values.</p>
-<p>Specifically, for every unit change in <span class="math inline">\(x_1\)</span> <strong>and</strong> <span class="math inline">\(\gamma_{1}\)</span> change in <span class="math inline">\(x_2\)</span>, we see a <span class="math inline">\(\beta_1\)</span> change in <span class="math inline">\(y\)</span>.</p>
-<p>These facts can be useful when we have data for additional variables but choose not to include them in a model. The choice to exclude certain variables, despite having data for them, is often made in the name of parsimony for the model. When we exclude variables because we cannot collect data for them, these facts will be at best a theoretical exercise.</p>
-<section id="setup" class="level2">
-<h2 class="anchored" data-anchor-id="setup">Setup</h2>
-<p>Three R packages are needed for this exercise:</p>
-<ul>
-<li><strong>plotly</strong> and <strong>regress3d</strong> to plot regression surfaces in 3 dimensions.</li>
-<li><strong>stargazer</strong> to create regression tables.</li>
-</ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(regress3d)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stargazer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<section id="interpreting-joint-changes-in-x_1-and-x_2" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="interpreting-joint-changes-in-x_1-and-x_2"><span class="header-section-number">2.1</span> Interpreting joint changes in <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span></h2>
+<p>The nested model (Model <span class="math inline">\(\ref{ypredbyx1}\)</span>) and the direction plotted in Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> both reflect the change in <code>prcnt_GOP16</code> as <code>median_income16_1k</code> and <code>prcnt_black</code> jointly change. The joint change is specified by Model <span class="math inline">\(\ref{x1predbyx2}\)</span>, where a one unit change in <code>median_income16_1k</code> ($1,000) is associated with a <strong>-0.707%</strong> change in the percent of the county identifies as Black (<code>prcnt_black</code>).</p>
+<p>Therefore, we can say that the nested model reflects that a joint one unit change in <code>median_income16_1k</code> ($1,000) <strong>and</strong> a <strong>-0.707%</strong> change in <code>prcnt_black</code> predicts a 0.364 unit change in <code>prcnt_GOP16</code>.</p>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(model1, model2, model3, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>          <span class="co"># type = "text",</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">type =</span> <span class="st">"html"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">model.numbers =</span> F,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">column.labels =</span>  <span class="fu">c</span>(<span class="st">"1"</span>,<span class="st">"2"</span>,<span class="st">"3"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table style="text-align:center">
+<tbody><tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+<em>Dependent variable:</em>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td colspan="3" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="2">
+prcnt_GOP16
+</td>
+<td>
+prcnt_black
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+1
+</td>
+<td>
+2
+</td>
+<td>
+3
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+median_income16_1k
+</td>
+<td>
+0.364<sup>**</sup>
+</td>
+<td>
+-0.336<sup>***</sup>
+</td>
+<td>
+-0.707<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.181)
+</td>
+<td>
+(0.076)
+</td>
+<td>
+(0.170)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+prcnt_black
+</td>
+<td>
+</td>
+<td>
+-0.991<sup>***</sup>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+(0.050)
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+47.929<sup>***</sup>
+</td>
+<td>
+109.201<sup>***</sup>
+</td>
+<td>
+61.826<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(7.915)
+</td>
+<td>
+(4.288)
+</td>
+<td>
+(7.423)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Observations
+</td>
+<td>
+64
+</td>
+<td>
+64
+</td>
+<td>
+64
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+R<sup>2</sup>
+</td>
+<td>
+0.061
+</td>
+<td>
+0.872
+</td>
+<td>
+0.218
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Adjusted R<sup>2</sup>
+</td>
+<td>
+0.046
+</td>
+<td>
+0.868
+</td>
+<td>
+0.205
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Residual Std. Error
+</td>
+<td>
+13.800 (df = 62)
+</td>
+<td>
+5.136 (df = 61)
+</td>
+<td>
+12.942 (df = 62)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+F Statistic
+</td>
+<td>
+4.041<sup>**</sup> (df = 1; 62)
+</td>
+<td>
+207.882<sup>***</sup> (df = 2; 61)
+</td>
+<td>
+17.295<sup>***</sup> (df = 1; 62)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+<em>Note:</em>
+</td>
+<td colspan="3" style="text-align:right">
+<sup><em></em></sup><em>p&lt;0.1; <sup><strong></strong></sup><strong>p&lt;0.05; <sup></sup></strong></em>p&lt;0.01
+</td>
+</tr>
+</tbody></table>
 </section>
-<section id="data" class="level2">
-<h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>The data used for this example is demographic and voting measures for all counties in the state of Louisiana in 2016. We could use data for all counties in the US, but limiting the analysis to Louisiana will highlight the differences in standard errors for Model <span class="math inline">\(\ref{ypredbyx1}\)</span> and Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span>.</p>
+<section id="a-possible-approach-to-extracting-standard-errors" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="a-possible-approach-to-extracting-standard-errors"><span class="header-section-number">2.2</span> A Possible Approach to Extracting Standard Errors</h2>
+<p>The standard errors for the <span style="color: green;">green</span> line above that shows the confidence interval of Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> are difficult to recover using mainstream statistical methods.</p>
+<section id="residuals-model" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="residuals-model"><span class="header-section-number">2.2.1</span> Residuals model</h3>
+<p>A similarly small standard error on <code>median_income16_1k</code> can be recovered by estimating <code>prcnt_GOP16</code> using both <code>median_income16_1k</code> and the <em>residuals</em> of <code>prcnt_black</code> from Model <span class="math inline">\(\ref{x1predbyx2}\)</span>.</p>
+<p>First, add a column of residual values to <code>la_counties</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>la_counties<span class="sc">$</span>resid_black_predby_income <span class="ot">&lt;-</span> <span class="fu">residuals</span>(model3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then we estimate Model <span class="math inline">\(\ref{ypredbyx1resids}\)</span></p>
+<p><span class="math display">\[\begin{align}
+y =&amp; \beta_1^{''} x_1 +\beta_2^{''} x^{''}_2 + \beta^{''}_0 +\epsilon^{''} \label{ypredbyx1resids}\\
+\text{% GOP} =&amp; \beta^{''}_1*\text{median-income16} + \beta^{''}_1*\text{resid-black-predby-income}+\beta^{''}_0 + \epsilon^{''} \nonumber
+\end{align}\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>la_counties<span class="sc">$</span>resid_black_predby_income_shifted <span class="ot">&lt;-</span> la_counties<span class="sc">$</span>resid_black_predby_income <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(la_counties<span class="sc">$</span>prcnt_black,<span class="at">na.rm=</span>T)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>model_blackresids <span class="ot">&lt;-</span> <span class="fu">lm</span>(prcnt_GOP16<span class="sc">~</span>median_income16_1k<span class="sc">+</span>resid_black_predby_income, </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">data =</span> la_counties)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, we compare the results from three models:</p>
 <ul>
-<li><code>prcnt_GOP16</code>: the percent of the county that voted for Donald Trump in 2016,</li>
-<li><code>median_income16_1k</code>: median income measured in units of $1,000 to improve the legibility of the results, and</li>
-<li><code>prcnt_black</code>: the percent of the county that identified as Black.</li>
+<li>Model <span class="math inline">\(\ref{ypredbyx1}\)</span>: <code>prcnt_GOP16</code> ~ <code>median_income16_1k</code></li>
+<li>Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span>: <code>prcnt_GOP16</code> ~ <code>median_income16_1k</code> + <code>prcnt_black</code></li>
+<li>Model <span class="math inline">\(\ref{ypredbyx1resids}\)</span>: <code>prcnt_GOP16</code> ~ <code>median_income16_1k</code> + <code>resid_black_predby_income</code></li>
 </ul>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(model1, model2, model_blackresids, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>          <span class="co"># type = "text",</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">type =</span> <span class="st">"html"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">model.numbers =</span> F,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">column.labels =</span>  <span class="fu">c</span>(<span class="st">"1"</span>,<span class="st">"2"</span>,<span class="st">"4"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table style="text-align:center">
+<tbody><tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+<em>Dependent variable:</em>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td colspan="3" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+prcnt_GOP16
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+1
+</td>
+<td>
+2
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+median_income16_1k
+</td>
+<td>
+0.364<sup>**</sup>
+</td>
+<td>
+-0.336<sup>***</sup>
+</td>
+<td>
+0.364<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.181)
+</td>
+<td>
+(0.076)
+</td>
+<td>
+(0.067)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+prcnt_black
+</td>
+<td>
+</td>
+<td>
+-0.991<sup>***</sup>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+(0.050)
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+resid_black_predby_income
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.991<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.050)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+47.929<sup>***</sup>
+</td>
+<td>
+109.201<sup>***</sup>
+</td>
+<td>
+47.929<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(7.915)
+</td>
+<td>
+(4.288)
+</td>
+<td>
+(2.946)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Observations
+</td>
+<td>
+64
+</td>
+<td>
+64
+</td>
+<td>
+64
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+R<sup>2</sup>
+</td>
+<td>
+0.061
+</td>
+<td>
+0.872
+</td>
+<td>
+0.872
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Adjusted R<sup>2</sup>
+</td>
+<td>
+0.046
+</td>
+<td>
+0.868
+</td>
+<td>
+0.868
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Residual Std. Error
+</td>
+<td>
+13.800 (df = 62)
+</td>
+<td>
+5.136 (df = 61)
+</td>
+<td>
+5.136 (df = 61)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+F Statistic
+</td>
+<td>
+4.041<sup>**</sup> (df = 1; 62)
+</td>
+<td>
+207.882<sup>***</sup> (df = 2; 61)
+</td>
+<td>
+207.882<sup>***</sup> (df = 2; 61)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+<em>Note:</em>
+</td>
+<td colspan="3" style="text-align:right">
+<sup><em></em></sup><em>p&lt;0.1; <sup><strong></strong></sup><strong>p&lt;0.05; <sup></sup></strong></em>p&lt;0.01
+</td>
+</tr>
+</tbody></table>
 </section>
-<section id="estimating-the-models-in-r" class="level2">
-<h2 class="anchored" data-anchor-id="estimating-the-models-in-r">Estimating the Models in R</h2>
-<p>We start by defining Model <span class="math inline">\(\ref{ypredbyx1}\)</span> in R.</p>
-<p><span class="math display">\[\begin{align*}
-y =&amp; \beta_1 x_1 + \beta_0 +\epsilon \\
-\text{r-shift} =&amp; \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon
-\end{align*}\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(prcnt_GOP16 <span class="sc">~</span> median_income16_1k,  <span class="at">data =</span> la_counties)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Model <span class="math inline">\(\ref{ypredbyx1}\)</span> is nested within Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span> with two <span class="math inline">\(x\)</span> variables;</p>
-<p><span class="math display">\[\begin{align*}
-y =&amp; \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \\
-\text{r-shift} =&amp; \beta'_1*\text{median-income16} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'
-
-\end{align*}\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(prcnt_GOP16 <span class="sc">~</span> median_income16_1k <span class="sc">+</span> prcnt_black, <span class="at">data =</span> la_counties)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Finally, we need to define Model <span class="math inline">\(\ref{x1predbyx2}\)</span>. This model will define the direction Model <span class="math inline">\(\ref{ypredbyx1}\)</span> takes in the regression surface for Model <span class="math inline">\(\ref{ypredbyx1x2}\)</span>.</p>
-<p><span class="math display">\[\begin{align*}
-x_2 =&amp; \beta_1 x_1 + \beta_0 +\epsilon \\
-\text{% Black} =&amp; \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon
-\end{align*}\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model3 <span class="ot">&lt;-</span> <span class="fu">lm</span>(prcnt_black <span class="sc">~</span> median_income16_1k, <span class="at">data =</span> la_counties)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<section id="takeaways" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="takeaways"><span class="header-section-number">2.2.2</span> Takeaways</h3>
+<ul>
+<li>The coefficients for <code>median_income16_1k</code> in Models <span class="math inline">\(\ref{ypredbyx1}\)</span> and <span class="math inline">\(\ref{ypredbyx1resids}\)</span> are identical.</li>
+<li>As expected, the standard errors are different in Models <span class="math inline">\(\ref{ypredbyx1}\)</span> and <span class="math inline">\(\ref{ypredbyx1resids}\)</span>.</li>
+<li>The indicators of overall model fit are identical for Models <span class="math inline">\(\ref{ypredbyx1x2}\)</span> and <span class="math inline">\(\ref{ypredbyx1resids}\)</span>.</li>
+</ul>
+<p>The proof of how the standard error for <code>median_income_1k</code> in Model <span class="math inline">\(\ref{ypredbyx1resids}\)</span> relates to the standard error of the green line plotted in the figure above is in progress.</p>
 
 
 </section>
@@ -742,11 +1224,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./visualize_models_3d.html" class="pagination-link" aria-label="Visualizing the Nested Model Inside the Full Model">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./visualize_models_3d.html" class="pagination-link" aria-label="Visualizing the Nested Model Inside the Full Model">
-        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Visualizing the Nested Model Inside the Full Model</span></span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
