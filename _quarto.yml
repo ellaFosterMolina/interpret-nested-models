@@ -1,0 +1,22 @@
+project:
+  type: book
+
+book:
+  title: "Interpreting and Visualizing Nested Models in 3D"
+  author: "Ella Foster-Molina"
+  chapters:
+    - index.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    include-in-header: mathjax.html
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+
+

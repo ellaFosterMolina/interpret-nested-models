@@ -1,0 +1,92 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "",
+    "text": "Introduction\nA model nested within another model is one where the nested model has a subset of the variables in the larger model. This article will visualize these models using a simple case where the nested model has one \\(x\\) variable, and the full model has two \\(x\\) variables.\nWe start by defining Model \\(\\ref{ypredbyx1}\\)\n\\[\\begin{align}\ny =& \\beta_1 x_1 + \\beta_0 +\\epsilon \\label{ypredbyx1}\n\\end{align}\\]\nModel \\(\\ref{ypredbyx1}\\) is nested within Model \\(\\ref{ypredbyx1x2}\\) with two \\(x\\) variables;\n\\[\\begin{align}\ny =& \\beta'_1 x_1 +\\beta'_2 x_2 + \\beta'_0 +\\epsilon' \\label{ypredbyx1x2}\n\\end{align}\\]\nThis article will demonstrate how to visualize the nested model inside a regression surface of Model \\(\\ref{ypredbyx1x2}\\) using the R package regress3d. Two observations emerge from this exercise.\nTherefore, the estimated values for the nested model can be understood as a direction in the regression surface of the larger model. The coefficient \\(\\beta_1\\) in Model \\(\\ref{ypredbyx1}\\) is the joint effect of \\(x_1\\) and \\(x_2\\) where the relative contributions of \\(x_1\\) and \\(x_2\\) are defined by Model \\(\\ref{x1predbyx2}\\). This occurs despite the fact that Model \\(\\ref{ypredbyx1}\\) does not use any information from \\(x_2\\) to estimate the \\(y\\) values.\nSpecifically, for every unit change in \\(x_1\\) and \\(\\gamma_{1}\\) change in \\(x_2\\), we see a \\(\\beta_1\\) change in \\(y\\).\nThese facts can be useful when we have data for additional variables but choose not to include them in a model. The choice to exclude certain variables, despite having data for them, is often made in the name of parsimony for the model. When we exclude variables because we cannot collect data for them, these facts will be at best a theoretical exercise.",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#create-predicted-values-data",
+    "href": "index.html#create-predicted-values-data",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Create predicted values data",
+    "text": "Create predicted values data\nIn order to visualize Model 1 nested inside the regression surface of Model 2, we will create a dataset of generated and predicted values. This will be used to plot the estimated values of prcnt_GOP16 in the 3D graphic.\n\nincome_seq is a sequence of values from the lowest value for median_income16_1k to the highest.\n\n\nincome_seq &lt;-  seq(min(la_counties$median_income16_1k, na.rm=TRUE),\n                   max(la_counties$median_income16_1k, na.rm=TRUE),\n                   length.out=10) \nincome_seq &lt;- data.frame(median_income16_1k =income_seq)\n\n\npredicted_gop is a dataframe that contains predicted values for prcnt_GOP16 based on Model \\(\\ref{ypredbyx1}\\) and the values in income_seq. Note that there is no explicit information about prcnt_black in the prediction.\npredicted_gop also contains the lower and upper 95% confidence intervals for the predicted values.\n\n\npredicted_gop &lt;- predict(object = model1, newdata = income_seq, \n                         interval = \"confidence\") %&gt;%\n  as.data.frame(.)\n\n\npredicted_prcnt_black is a sequence of predicted values for prcnt_black based on Model \\(\\ref{x1predbyx2}\\) and the values in income_seq.\n\n\npredicted_prcnt_black &lt;- predict(object = model3, newdata = income_seq)\n\nWe then turn these values into a dataframe that plot_ly can use to create lines in 3D.\n\nsimulated_data_nested_model &lt;- data.frame(median_income16_1k = income_seq,\n                                          prcnt_black = predicted_prcnt_black,\n                                          prcnt_GOP16 = predicted_gop$fit,\n                                          lowerCI = predicted_gop$lwr,\n                                          upperCI = predicted_gop$upr)",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#create-3d-visual",
+    "href": "index.html#create-3d-visual",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Create 3D visual",
+    "text": "Create 3D visual\n\nplot_ly( data = la_counties,\n         x = ~median_income16_1k,\n         y = ~prcnt_black,\n         z = ~prcnt_GOP16) %&gt;%\n  add_markers(size = ~pop_estimate16, color = I(\"black\"),\n              name = \"Louisiana counties\") %&gt;%\n  add_3d_surface(model = model2)%&gt;%\n  # add_marginals(model = model2, \n  #               x1_direction_name =\"Marginal effect of income\",\n  #               x2_direction_name =\"Marginal effect of education\")%&gt;%\n  add_direction(model = model2, direction_data = simulated_data_nested_model,\n                direction_name = \"Nested model: prcnt_GOP16 ~ median_income16_1k,&lt;br&gt; omitting prcnt_black\")",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#takeaways",
+    "href": "index.html#takeaways",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Takeaways",
+    "text": "Takeaways\n\nThe line of predicted values for prcnt_GOP16 appear to lie exactly on the regression plane generated by Model \\(\\ref{ypredbyx1x2}\\) in blue. This occurs despite the fact that education was not used to generate the estimates for the predicted values of prcnt_GOP16.\nThe confidence intervals for prcnt_GOP16 lie outside the confidence intervals for the regression plane generated by Model \\(\\ref{ypredbyx1x2}\\).\n\nThe next section will demonstrate that the predicted values of prcnt_GOP16 are precisely on the regression plane generated by Model \\(\\ref{ypredbyx1x2}\\). We will generate the predicted values for prcnt_GOP16 from Model \\(\\ref{ypredbyx1x2}\\) using the paired values (\\(x_1\\), \\(x_2\\)) = (median_income16_1k, prcnt_black), where the value for \\(x_2\\) is predicted by Model \\(\\ref{x1predbyx2}\\), prcnt_black ~ median_income16_1k.\nThe section on residuals will demonstrate how to extract the standard errors used to create the confidence intervals in Model \\(\\ref{ypredbyx1x2}\\) for the direction in the nested model.",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#create-predicted-values-data-1",
+    "href": "index.html#create-predicted-values-data-1",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Create predicted values data",
+    "text": "Create predicted values data\nThe previous section predicted values for prcnt_GOP16 using Model \\(\\ref{ypredbyx1}\\), a model that includes median_income_1k but has no information about prcnt_black. This section will predict values for prcnt_GOP16 using Model \\(\\ref{ypredbyx1x2}\\), a model that includes both median_income_1k and prcnt_black.\n\nAs in the prior section, income_seq is a sequence of values from the lowest value for median_income16_1k to the highest.\npredicted_prcnt_black is the same as the prior section, a sequence of predicted values for prcnt_black based on Model \\(\\ref{x1predbyx2}\\) and the values in income_seq. We bind these values into a dataframe to be used to generate predicted_rshift.\n\n\nincome_edu_data &lt;- data.frame(median_income16_1k = income_seq,\n                              prcnt_black = predicted_prcnt_black)\n\n\npredicted_rshift is a dataframe that contains predicted values for prcnt_GOP16 based on Model \\(\\ref{ypredbyx1x2}\\) and the values in income_edu_data. It also contains the lower and upper 95% confidence intervals for the predicted values.\n\n\npredicted_rshift &lt;- predict(object = model2, newdata = income_edu_data, interval = \"confidence\") %&gt;%\n  as.data.frame(.)\n\nWe then turn these values into a dataframe that plot_ly can use to create lines in 3D.\n\nsimulated_data_model2 &lt;- data.frame(median_income16_1k = income_seq,\n                                    prcnt_black = predicted_prcnt_black,\n                                    prcnt_GOP16 = predicted_rshift$fit,\n                                    lowerCI = predicted_rshift$lwr,\n                                    upperCI = predicted_rshift$upr)",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#create-3d-visual-1",
+    "href": "index.html#create-3d-visual-1",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Create 3D visual",
+    "text": "Create 3D visual\n\nplot_ly( data = la_counties,\n         x = ~median_income16_1k,\n         y = ~prcnt_black,\n         z = ~prcnt_GOP16) %&gt;%\n  add_markers(size = ~pop_estimate16, color = I(\"black\"),\n              name = \"Louisiana counties\") %&gt;%\n  # add_3d_surface(model = model2)%&gt;%\n  # add_marginals(model = model2, \n  #               x1_direction_name =\"Marginal effect of income\",\n  #               x2_direction_name =\"Marginal effect of education\")%&gt;%\n  add_direction(model = model2, direction_data = simulated_data_nested_model,\n                direction_name = \"Nested model: prcnt_GOP16 ~ median_income16_1k,&lt;br&gt; omitting prcnt_black\") %&gt;%\n  add_direction(model = model2, direction_data = simulated_data_model2,\n                linecolor = \"green\",\n                direction_name = \"A direction in Model 2:&lt;br&gt;prcnt_GOP16 ~ median_income16_1k + prcnt_black\")",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#takeaways-1",
+    "href": "index.html#takeaways-1",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Takeaways",
+    "text": "Takeaways\n\nThese two lines look identical:\n\nThe green line of predicted values for prcnt_GOP16 based on Model \\(\\ref{ypredbyx1x2}\\) in the direction of the best fit line for Model \\(\\ref{x1predbyx2}\\): prcnt_black ~ median_income16_1k\nThe black line of predicted values for prcnt_GOP16 based on Model \\(\\ref{ypredbyx1}\\), which does not have any information about prcnt_black.\n\n\nThe table below shows that they are identical to a numeric error. Specifically, they are identical within 13 significant digits, which is within the precision that R can estimate values.\n\ndiff_model1_model2 &lt;- simulated_data_nested_model$prcnt_GOP16 - simulated_data_model2$prcnt_GOP16\ndata.frame(model1_rshift =  simulated_data_nested_model$prcnt_GOP16,\n           model2_rshift =  simulated_data_model2$prcnt_GOP16, \n           diff = round(diff_model1_model2, digits = 13) )\n#&gt;    model1_rshift model2_rshift diff\n#&gt; 1       57.33353      57.33353    0\n#&gt; 2       59.29305      59.29305    0\n#&gt; 3       61.25256      61.25256    0\n#&gt; 4       63.21208      63.21208    0\n#&gt; 5       65.17160      65.17160    0\n#&gt; 6       67.13111      67.13111    0\n#&gt; 7       69.09063      69.09063    0\n#&gt; 8       71.05015      71.05015    0\n#&gt; 9       73.00966      73.00966    0\n#&gt; 10      74.96918      74.96918    0\n\nThe models with the full regression surface is plotted below.\n\nplot_ly( data = la_counties,\n         x = ~median_income16_1k,\n         y = ~prcnt_black,\n         z = ~prcnt_GOP16) %&gt;%\n  add_markers(size = ~pop_estimate16, color = I(\"black\"),\n              name = \"Louisiana counties\") %&gt;%\n  add_3d_surface(model = model2)%&gt;%\n  # add_marginals(model = model2, \n  #               x1_direction_name =\"Marginal effect of income\",\n  #               x2_direction_name =\"Marginal effect of education\")%&gt;%\n  add_direction(model = model2, direction_data = simulated_data_nested_model,\n                direction_name = \"Nested model: prcnt_GOP16 ~ median_income16_1k,&lt;br&gt; omitting prcnt_black\") %&gt;%\n  add_direction(model = model2, direction_data = simulated_data_model2,\n                linecolor = \"green\",\n                direction_name = \"A direction in Model 2:&lt;br&gt;prcnt_GOP16 ~ median_income16_1k + prcnt_black\")",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#residuals-model",
+    "href": "index.html#residuals-model",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Residuals model",
+    "text": "Residuals model\nA similarly small standard error on median_income16_1k can be recovered by estimating prcnt_GOP16 using both median_income16_1k and the residuals of prcnt_black from Model \\(\\ref{x1predbyx2}\\).\nFirst, add a column of residual values to la_counties.\n\nla_counties$resid_black_predby_income &lt;- residuals(model3)\n\nThen we estimate Model \\(\\ref{ypredbyx1resids}\\)\n\\[\\begin{align}\ny =& \\beta_1^{''} x_1 +\\beta_2^{''} x^{''}_2 + \\beta^{''}_0 +\\epsilon^{''} \\label{ypredbyx1resids}\\\\\n\\text{% GOP} =& \\beta^{''}_1*\\text{median-income16} + \\beta^{''}_1*\\text{resid-black-predby-income}+\\beta^{''}_0 + \\epsilon^{''} \\nonumber\n\\end{align}\\]\n\nla_counties$resid_black_predby_income_shifted &lt;- la_counties$resid_black_predby_income +\n  mean(la_counties$prcnt_black,na.rm=T)\nmodel_blackresids &lt;- lm(prcnt_GOP16~median_income16_1k+resid_black_predby_income, \n                      data = la_counties)\n\nFinally, we compare the results from three models:\n\nModel \\(\\ref{ypredbyx1}\\): prcnt_GOP16 ~ median_income16_1k\nModel \\(\\ref{ypredbyx1x2}\\): prcnt_GOP16 ~ median_income16_1k + prcnt_black\nModel \\(\\ref{ypredbyx1resids}\\): prcnt_GOP16 ~ median_income16_1k + resid_black_predby_income\n\nstargazer(model1, model2, model_blackresids, \n          # type = \"text\",\n          type = \"html\",\n          model.numbers = F,\n          column.labels =  c(\"1\",\"2\",\"4\"))\n\n\n\n\n\n\n\n\n\nDependent variable:\n\n\n\n\n\n\n\n\n\n\n\n\nprcnt_GOP16\n\n\n\n\n\n\n1\n\n\n2\n\n\n4\n\n\n\n\n\n\n\n\nmedian_income16_1k\n\n\n0.364**\n\n\n-0.336***\n\n\n0.364***\n\n\n\n\n\n\n(0.181)\n\n\n(0.076)\n\n\n(0.067)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nprcnt_black\n\n\n\n\n-0.991***\n\n\n\n\n\n\n\n\n\n\n(0.050)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nresid_black_predby_income\n\n\n\n\n\n\n-0.991***\n\n\n\n\n\n\n\n\n\n\n(0.050)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nConstant\n\n\n47.929***\n\n\n109.201***\n\n\n47.929***\n\n\n\n\n\n\n(7.915)\n\n\n(4.288)\n\n\n(2.946)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nObservations\n\n\n64\n\n\n64\n\n\n64\n\n\n\n\nR2\n\n\n0.061\n\n\n0.872\n\n\n0.872\n\n\n\n\nAdjusted R2\n\n\n0.046\n\n\n0.868\n\n\n0.868\n\n\n\n\nResidual Std. Error\n\n\n13.800 (df = 62)\n\n\n5.136 (df = 61)\n\n\n5.136 (df = 61)\n\n\n\n\nF Statistic\n\n\n4.041** (df = 1; 62)\n\n\n207.882*** (df = 2; 61)\n\n\n207.882*** (df = 2; 61)\n\n\n\n\n\n\n\n\nNote:\n\n\np&lt;0.1; p&lt;0.05; p&lt;0.01",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "index.html#takeaways-2",
+    "href": "index.html#takeaways-2",
+    "title": "Interpreting and Visualizing Nested Models in 3D",
+    "section": "Takeaways",
+    "text": "Takeaways\n\nThe coefficients for median_income16_1k in Models \\(\\ref{ypredbyx1}\\) and \\(\\ref{ypredbyx1resids}\\) are identical.\nAs expected, the standard errors are different in Models \\(\\ref{ypredbyx1}\\) and \\(\\ref{ypredbyx1resids}\\).\nThe indicators of overall model fit are identical for Models \\(\\ref{ypredbyx1x2}\\) and \\(\\ref{ypredbyx1resids}\\).\n\nThe proof of how the standard error for median_income_1k in Model \\(\\ref{ypredbyx1resids}\\) relates to the standard error of the green line plotted in the figure above is in progress.",
+    "crumbs": [
+      "Introduction"
+    ]
+  }
+]

@@ -1,0 +1,430 @@
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  warning = F,
+  message = F
+)
+```
+
+# Introduction {.unnumbered}
+
+A model nested within another model is one where the nested model has a subset of the variables in the larger model. This article will visualize these models using a simple case where the nested model has one $x$ variable, and the full model has two $x$ variables.
+
+We start by defining Model \ref{ypredbyx1}
+
+\begin{align}
+y =& \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}
+\end{align}
+
+Model \ref{ypredbyx1} is nested within Model \ref{ypredbyx1x2} with two $x$ variables;
+
+\begin{align}
+y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}
+\end{align}
+
+This article will demonstrate how to visualize the nested model inside a regression surface of Model \ref{ypredbyx1x2} using the R package __regress3d__. Two observations emerge from this exercise.
+
+1.  The estimated values for $y$ from the nested model are identical to the estimated values of the full model in the direction of Model \ref{x1predbyx2}: the best fit line for $x_2$ estimated by $x_1$.
+\begin{align}
+  x_2 =& \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}
+\end{align}
+2.  The estimated standard errors for $y$ from the nested model are **not** identical to the estimated standard errors for $y$ for the full model in the direction of the best fit line for the model.
+
+Therefore, the estimated values for the nested model can be understood as a direction in the regression surface of the larger model. The coefficient $\beta_1$ in Model \ref{ypredbyx1} is the **joint** effect of $x_1$ and $x_2$ where the relative contributions of $x_1$ and $x_2$ are defined by Model \ref{x1predbyx2}. This occurs despite the fact that Model \ref{ypredbyx1} does not use any information from $x_2$ to estimate the $y$ values.
+
+Specifically, for every unit change in $x_1$ **and** $\gamma_{1}$ change in $x_2$, we see a $\beta_1$ change in $y$.
+
+These facts can be useful when we have data for additional variables but choose not to include them in a model. The choice to exclude certain variables, despite having data for them, is often made in the name of parsimony for the model. When we exclude variables because we cannot collect data for them, these facts will be at best a theoretical exercise.
+
+# Setup
+
+Three R packages are needed for this exercise:
+
+-   **plotly** and **regress3d** to plot regression surfaces in 3 dimensions.
+-   **stargazer** to create regression tables.
+
+```{r, include = T}
+library(regress3d)
+library(plotly)
+library(stargazer)
+```
+
+# Data
+
+The data used for this example is demographic and voting measures for all counties in the state of Louisiana in 2016. We could use data for all counties in the US, but limiting the analysis to Louisiana will highlight the differences in standard errors for Model \ref{ypredbyx1} and Model \ref{ypredbyx1x2}.
+
+-   `prcnt_GOP16`:  the percent of the county that voted for Donald Trump in 2016,
+-   `median_income16_1k`: median income measured in units of \$1,000 to improve the legibility of the results, and
+-   `prcnt_black`: the percent of the county that identified as Black.
+
+```{r, include = F}
+la_counties <- subset(county_data, state_abbrv == "LA")
+```
+
+# Estimating the Models in R
+
+We start by defining Model \ref{ypredbyx1} in R.
+
+\begin{align*}
+y =& \beta_1 x_1 + \beta_0 +\epsilon \\
+\text{r-shift} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon
+\end{align*}
+
+```{r}
+model1 <- lm(prcnt_GOP16 ~ median_income16_1k,  data = la_counties)
+```
+
+Model \ref{ypredbyx1} is nested within Model \ref{ypredbyx1x2} with two $x$ variables;
+
+\begin{align*}
+y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \\
+\text{r-shift} =& \beta'_1*\text{median-income16} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'
+
+\end{align*}
+
+```{r}
+model2 <- lm(prcnt_GOP16 ~ median_income16_1k + prcnt_black, data = la_counties)
+```
+
+Finally, we need to define Model \ref{x1predbyx2}. This model will define the direction Model \ref{ypredbyx1} takes in the regression surface for Model \ref{ypredbyx1x2}.
+
+\begin{align*}
+x_2 =& \beta_1 x_1 + \beta_0 +\epsilon \\
+\text{% Black} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon
+\end{align*}
+
+```{r}
+model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
+```
+
+# Visualizing Model 1: The nested model with one x variable
+
+The standard way to visualize Model \ref{ypredbyx1} is in 2 dimensions using a scatterplot with a regression line.
+
+```{r}
+la_counties %>%
+  ggplot(aes(x = median_income16_1k, y = prcnt_GOP16)) +
+  geom_point()+
+  geom_smooth(method = lm)+
+  theme_classic()+
+  labs(y = "% of County that Voted for Trump in 2016",
+       x = "County median income")
+```
+# Visualizing Model 2: The model with two x variables
+
+Before we see the nested model (Model \ref{ypredbyx1}) in 3D, we can examine the regression surface for Model \ref{ypredbyx1x2} visualized the 3D. The marginal effects of `median_income16_1k` and `prcnt_black` are depicted for reference. 
+
+A more thorough explanation of the code used to create the regression surface and marginal effects, as well as more instructions on how to interact with the 3D graphic can be found [here](https://ellafostermolina.github.io/regress3d/articles/linear_models_3d.html).
+
+```{r}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name ="Louisiana county") %>%
+  add_3d_surface(model = model2)%>%
+  add_marginals(model = model2, 
+                x1_direction_name ="Marginal effect of income",
+                x2_direction_name ="Marginal effect of education")
+```
+
+Click-hold-drag the image above to rotate it and see the regression surface from different perspectives.
+
+# Visualizing Model 1 Nested Inside Model 2
+
+The nested model can be shown within the regression surface generated by Model \ref{ypredbyx1x2}. This section will demonstrate how to do this. The next section will demonstrate that the predicted $y$ values in the nested model are indeed identical to the predicted values in the regression surface in the direction defined by Model \ref{x1predbyx2}.
+
+## Create predicted values data
+
+In order to visualize Model 1 nested inside the regression surface of Model 2, we will create a dataset of generated and predicted values. This will be used to plot the estimated values of `prcnt_GOP16` in the 3D graphic.
+
+* `income_seq` is a sequence of values from the lowest value for `median_income16_1k` to the highest.
+```{r}
+income_seq <-  seq(min(la_counties$median_income16_1k, na.rm=TRUE),
+                   max(la_counties$median_income16_1k, na.rm=TRUE),
+                   length.out=10) 
+income_seq <- data.frame(median_income16_1k =income_seq)
+```
+* `predicted_gop` is a dataframe that contains predicted values for `prcnt_GOP16` based on Model \ref{ypredbyx1} and the values in `income_seq`. Note that there is no explicit information about `prcnt_black` in the prediction.
+* `predicted_gop` also contains the lower and upper 95\% confidence intervals for the predicted values.
+```{r}
+predicted_gop <- predict(object = model1, newdata = income_seq, 
+                         interval = "confidence") %>%
+  as.data.frame(.)
+```
+* `predicted_prcnt_black` is a sequence of predicted values for `prcnt_black` based on Model \ref{x1predbyx2} and the values in `income_seq`.
+```{r}
+predicted_prcnt_black <- predict(object = model3, newdata = income_seq)
+```
+We then turn these values into a dataframe that `plot_ly` can use to create lines in 3D.
+
+```{r}
+simulated_data_nested_model <- data.frame(median_income16_1k = income_seq,
+                                          prcnt_black = predicted_prcnt_black,
+                                          prcnt_GOP16 = predicted_gop$fit,
+                                          lowerCI = predicted_gop$lwr,
+                                          upperCI = predicted_gop$upr)
+```
+
+## Create 3D visual
+
+```{r}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  # add_marginals(model = model2, 
+  #               x1_direction_name ="Marginal effect of income",
+  #               x2_direction_name ="Marginal effect of education")%>%
+  add_direction(model = model2, direction_data = simulated_data_nested_model,
+                direction_name = "Nested model: prcnt_GOP16 ~ median_income16_1k,<br> omitting prcnt_black")
+```
+
+## Takeaways
+
+* The line of predicted values for `prcnt_GOP16` appear to lie exactly on the regression plane generated by Model \ref{ypredbyx1x2} in blue. *This occurs despite the fact that education was not used to generate the estimates for the predicted values of `prcnt_GOP16`.* 
+* The confidence intervals for `prcnt_GOP16` lie outside the confidence intervals for the regression plane generated by Model \ref{ypredbyx1x2}. 
+
+The next section will demonstrate that the predicted values of `prcnt_GOP16` are precisely on the regression plane generated by Model \ref{ypredbyx1x2}. We will generate the predicted values for `prcnt_GOP16` from Model \ref{ypredbyx1x2} using the paired values ($x_1$, $x_2$) = (`median_income16_1k`, `prcnt_black`), where the value for $x_2$ is predicted by Model \ref{x1predbyx2}, `prcnt_black` ~ `median_income16_1k`.
+
+The section on residuals will demonstrate how to extract the standard errors used to create the confidence intervals in Model \ref{ypredbyx1x2} for the direction in the nested model.
+
+# Visualizing A Direction in Model 1 with the Same Predicted Values as the Nested Model 
+
+## Create predicted values data
+
+The previous section predicted values for `prcnt_GOP16` using Model \ref{ypredbyx1}, a model that includes `median_income_1k` but has no information about `prcnt_black`. This section will predict values for `prcnt_GOP16` using Model \ref{ypredbyx1x2}, a model that includes both `median_income_1k` and `prcnt_black`. 
+
+* As in the prior section, `income_seq` is a sequence of values from the lowest value for `median_income16_1k` to the highest.
+* `predicted_prcnt_black` is the same as the prior section, a sequence of predicted values for `prcnt_black` based on Model \ref{x1predbyx2} and the values in `income_seq`. We bind these values into a dataframe to be used to generate `predicted_rshift`.
+```{r}
+income_edu_data <- data.frame(median_income16_1k = income_seq,
+                              prcnt_black = predicted_prcnt_black)
+```
+* `predicted_rshift` is a dataframe that contains predicted values for `prcnt_GOP16` based on Model \ref{ypredbyx1x2} and the values in `income_edu_data`. It also contains the lower and upper 95\% confidence intervals for the predicted values.
+```{r}
+predicted_rshift <- predict(object = model2, newdata = income_edu_data, interval = "confidence") %>%
+  as.data.frame(.)
+```
+We then turn these values into a dataframe that `plot_ly` can use to create lines in 3D.
+
+```{r}
+simulated_data_model2 <- data.frame(median_income16_1k = income_seq,
+                                    prcnt_black = predicted_prcnt_black,
+                                    prcnt_GOP16 = predicted_rshift$fit,
+                                    lowerCI = predicted_rshift$lwr,
+                                    upperCI = predicted_rshift$upr)
+```
+
+
+## Create 3D visual
+
+```{r}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  # add_3d_surface(model = model2)%>%
+  # add_marginals(model = model2, 
+  #               x1_direction_name ="Marginal effect of income",
+  #               x2_direction_name ="Marginal effect of education")%>%
+  add_direction(model = model2, direction_data = simulated_data_nested_model,
+                direction_name = "Nested model: prcnt_GOP16 ~ median_income16_1k,<br> omitting prcnt_black") %>%
+  add_direction(model = model2, direction_data = simulated_data_model2,
+                linecolor = "green",
+                direction_name = "A direction in Model 2:<br>prcnt_GOP16 ~ median_income16_1k + prcnt_black")
+```
+
+## Takeaways
+
+* These two lines look identical:
+    *   The [green]{style="color: green;"} line of predicted values for `prcnt_GOP16` based on Model \ref{ypredbyx1x2} in the *direction* of the best fit line for Model \ref{x1predbyx2}: `prcnt_black` ~ `median_income16_1k`
+    *   The [black]{style="color: black;"} line of predicted values for `prcnt_GOP16` based on Model \ref{ypredbyx1}, which does not have any information about `prcnt_black`.
+    
+The table below shows that they are identical to a numeric error. Specifically, they are identical within 13 significant digits, which is within the precision that R can estimate values.
+
+```{r}
+diff_model1_model2 <- simulated_data_nested_model$prcnt_GOP16 - simulated_data_model2$prcnt_GOP16
+data.frame(model1_rshift =  simulated_data_nested_model$prcnt_GOP16,
+           model2_rshift =  simulated_data_model2$prcnt_GOP16, 
+           diff = round(diff_model1_model2, digits = 13) )
+```
+
+The models with the full regression surface is plotted below.
+
+```{r}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  # add_marginals(model = model2, 
+  #               x1_direction_name ="Marginal effect of income",
+  #               x2_direction_name ="Marginal effect of education")%>%
+  add_direction(model = model2, direction_data = simulated_data_nested_model,
+                direction_name = "Nested model: prcnt_GOP16 ~ median_income16_1k,<br> omitting prcnt_black") %>%
+  add_direction(model = model2, direction_data = simulated_data_model2,
+                linecolor = "green",
+                direction_name = "A direction in Model 2:<br>prcnt_GOP16 ~ median_income16_1k + prcnt_black")
+```
+
+# Interpreting joint changes in $x_1$ and $x_2$
+
+The nested model (Model \ref{ypredbyx1}) and the direction plotted in Model \ref{ypredbyx1x2} both reflect the change in `prcnt_GOP16` as `median_income16_1k` and `prcnt_black` jointly change. The joint change is specified by Model \ref{x1predbyx2}, where a one unit change in `median_income16_1k` (\$1,000) is associated with a **-0.707\%** change in the percent of the county identifies as Black (`prcnt_black`).
+
+Therefore, we can say that the nested model reflects that a joint one unit change in `median_income16_1k` (\$1,000) **and** a **-0.707\%** change in `prcnt_black` predicts a 0.364 unit change in `prcnt_GOP16`.
+
+```{r, results = 'asis'}
+stargazer(model1, model2, model3, 
+          # type = "text",
+          type = "html",
+          model.numbers = F,
+          column.labels =  c("1","2","3"))
+```
+
+# A Possible Approach to Extracting Standard Errors
+
+The standard errors for the [green]{style="color: green;"} line above that shows the confidence interval of Model \ref{ypredbyx1x2} are difficult to recover using mainstream statistical methods. 
+
+## Residuals model 
+
+A similarly small standard error on `median_income16_1k` can be recovered by estimating `prcnt_GOP16` using both `median_income16_1k` and the *residuals* of `prcnt_black` from Model \ref{x1predbyx2}.
+
+First, add a column of residual values to `la_counties`.
+
+```{r}
+la_counties$resid_black_predby_income <- residuals(model3)
+```
+
+Then we estimate Model \ref{ypredbyx1resids}
+
+\begin{align}
+y =& \beta_1^{''} x_1 +\beta_2^{''} x^{''}_2 + \beta^{''}_0 +\epsilon^{''} \label{ypredbyx1resids}\\
+\text{% GOP} =& \beta^{''}_1*\text{median-income16} + \beta^{''}_1*\text{resid-black-predby-income}+\beta^{''}_0 + \epsilon^{''} \nonumber
+\end{align}
+
+```{r}
+la_counties$resid_black_predby_income_shifted <- la_counties$resid_black_predby_income +
+  mean(la_counties$prcnt_black,na.rm=T)
+model_blackresids <- lm(prcnt_GOP16~median_income16_1k+resid_black_predby_income, 
+                      data = la_counties)
+```
+
+Finally, we compare the results from three models:
+
+* Model \ref{ypredbyx1}: `prcnt_GOP16` ~ `median_income16_1k`
+* Model \ref{ypredbyx1x2}: `prcnt_GOP16` ~ `median_income16_1k` + `prcnt_black`
+* Model \ref{ypredbyx1resids}: `prcnt_GOP16` ~ `median_income16_1k` + `resid_black_predby_income`
+
+```{r, results = 'asis'}
+stargazer(model1, model2, model_blackresids, 
+          # type = "text",
+          type = "html",
+          model.numbers = F,
+          column.labels =  c("1","2","4"))
+```
+## Takeaways
+
+* The coefficients for `median_income16_1k` in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are identical. 
+* As expected, the standard errors are different in Models \ref{ypredbyx1} and \ref{ypredbyx1resids}.
+* The indicators of overall model fit are identical for Models \ref{ypredbyx1x2} and \ref{ypredbyx1resids}. 
+
+The proof of how the standard error for `median_income_1k` in Model \ref{ypredbyx1resids} relates to the standard error of the green line plotted in the figure above is in progress.
+```{r, include = F, eval=F}
+#mean centering variables
+x1 <-la_counties$median_income16_1k - mean(la_counties$median_income16_1k , na.rm=T)
+x2 <-la_counties$prcnt_black - mean(la_counties$prcnt_black , na.rm=T)
+x <- cbind(x1,x2)
+y <- la_counties$prcnt_GOP16 - mean(la_counties$prcnt_GOP16 , na.rm=T)
+
+# Calculating variance and std dev
+sigma_full <- summary(model2)$sigma^2
+#hand calculating sigma_full
+beta <- summary(tmp)$coefficients[c("x1", "x2"), "Estimate"]
+(t(y)%*%y - t(beta)%*%t(x)%*%y)/(length(x1)-length(beta)-1)
+# double checking variance in mean centered model
+tmp <- lm(y~x1+x2) 
+summary(tmp)$sigma^2 #var in mean centered model is same
+
+x1transpx1inv <-( t(x1)%*%x1 )^(-1)
+
+xtranspxinv <-( t(x)%*%x )^(-1)
+gamma <- summary(model3)$coefficients["median_income16_1k","Estimate"]
+gamma <- x1transpx1inv%*%t(x1)%*%x2
+gamma_mat <- matrix(c(1, gamma), ncol = 2)
+
+#calculating variance for rotated variables
+var <- sigma_full*gamma_mat%*%xtranspxinv%*%t(gamma_mat)
+sqrt(var)
+
+# trying to create rotated x vars
+rotation_matrix <- matrix(c(1, gamma, -gamma, 1), nrow = 2)
+a <- rotation_matrix[1,1]
+b <- rotation_matrix[2,1]
+rotation_matrix <- rotation_matrix*(1/sqrt((a^2 + b^2) ))
+a <- rotation_matrix[1, 1]
+b <- rotation_matrix[2, 1]
+mean_x1 <- mean(la_counties$median_income16_1k , na.rm=T)
+mean_x2 <- mean(la_counties$prcnt_black , na.rm=T)
+
+la_counties$rotation1 <- a*la_counties$median_income16_1k +b*la_counties$prcnt_black  - a*mean_x1 - b*mean_x2
+la_counties$rotation.orth <- -b*la_counties$median_income16_1k +a*la_counties$prcnt_black  + b*mean_x1 - a*mean_x2
+
+units.of.x1.adjustment <- 1/sqrt(1^2 + gamma^2)
+la_counties$rotation1_adj <- la_counties$rotation1*units.of.x1.adjustment
+la_counties$rotation.orth_adj <- la_counties$rotation.orth*units.of.x1.adjustment
+
+lm(la_counties$prcnt_GOP16 ~la_counties$rotation1 +la_counties$rotation.orth) %>% summary(.)
+lm(la_counties$prcnt_GOP16 ~la_counties$rotation1_adj +la_counties$rotation.orth_adj) %>% summary(.)
+model_rotated <- lm(la_counties$prcnt_GOP16 ~la_counties$rotation1_adj +la_counties$rotation.orth_adj) 
+
+x1_r <- la_counties$rotation1_adj
+x2_r <- la_counties$rotation.orth_adj
+
+x_r <- cbind(1, x1_r, x2_r)
+xtranspxinv_r <-( t(x_r)%*%x_r )^(-1)
+var_r <- sigma_full*xtranspxinv_r[1,1]
+var_r <- sigma_full*xtranspxinv_r[2,2]
+sqrt(var_r)
+
+stargazer(model1, model2, model_eduresids, model_rotated,
+          type = "text",
+          # type = "html",
+          model.numbers = F,
+          column.labels =  c("1","2","residuals", "rotated"))
+
+```
+
+
+```{r, include=F, eval = F}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  add_marginals(model = model2,
+                omit_x1=T,
+                x2_direction_name ="Marginal effect of education")%>%
+  # add_3d_surface(model = model_eduresids)%>%
+  # add_marginals(model = model_eduresids,
+  #               x1_direction_name ="Marginal effect of income",
+  #               x1_color = "grey",
+  #               x2_direction_name ="Marginal effect of the residuals of education",
+  #               x2_color = "darkgrey")
+  # add_direction(model = model2, direction_data = simulated_data_nested_model,
+  #               direction_name = "Nested model: prcnt_GOP16 ~ median_income16_1k,<br> omitting prcnt_black") %>%
+  add_direction(model = model2, direction_data = simulated_data_model2,
+                linecolor = "green",
+                direction_name = "A direction in Model 2:<br>prcnt_GOP16 ~ median_income16_1k + prcnt_black")
+```
