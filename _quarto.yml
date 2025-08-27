@@ -6,6 +6,8 @@ book:
   author: "Ella Foster-Molina"
   chapters:
     - index.qmd
+    - visualize_models_3d.qmd
+    - interpret_joint_change_stderrors.qmd
 
 bibliography: references.bib
 
