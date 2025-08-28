@@ -7,7 +7,8 @@ book:
   chapters:
     - index.qmd
     - visualize_models_3d.qmd
-    - interpret_joint_change_stderrors.qmd
+    - joint_change.qmd
+    - standard_error_in_gamma_direction.qmd
 
 bibliography: references.bib
 
@@ -18,5 +19,5 @@ format:
       - cosmo
       - brand
 
-number-depth: 1
+number-depth: 2
 

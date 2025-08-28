@@ -1,0 +1,278 @@
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  warning = F,
+  message = F
+)
+```
+
+```{r, include = FALSE}
+library(regress3d)
+library(plotly)
+library(stargazer)
+la_counties <- subset(county_data, state_abbrv == "LA")
+model1 <- lm(prcnt_GOP16 ~ median_income16_1k,  data = la_counties)
+model2 <- lm(prcnt_GOP16 ~ median_income16_1k + prcnt_black, data = la_counties)
+model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
+
+```
+
+# An Approach for Extracting Standard Errors in the $\gamma_1$ Direction {#sec-stderrors}
+
+It is not standard practice to estimate standard errors in the $\gamma_1$ direction of the full model. However, they can be recovered. This section demonstrates one possible way to recover them using the residuals model. See authors note for more details.
+
+[*Author's note*]{.underline}*: I have a general proof of the numerical findings in the previous section: the estimate of* $\beta_1$ *in the nested linear model is the same as the change in* $y$ *in the gamma_1 direction specified by Model* \ref{x1predbyx2} *in the regression surface in the full linear model. I do not have a general proof that the standard error for* $\beta^{'''}_1$ *in the residuals model is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\beta_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the gamma_1 direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
+
+For reference, the nested model is defined as Model \ref{ypredbyx1}:
+
+\begin{align}
+y =& \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}\\
+\text{r-shift} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon \nonumber.
+\end{align}
+
+The full model is defined as as Model \ref{ypredbyx1x2}:
+
+\begin{align}
+y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}\\
+\text{r-shift} =& \beta'_1*\text{median-income16-1k} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'. \nonumber
+\end{align}
+
+The model that defines the direction of the change in $y$ in the nested model is Model \ref{x1predbyx2}:
+
+\begin{align}
+  x_2 =& \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}\\
+\text{% Black} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon. \nonumber
+\end{align}
+
+## Estimating the Residuals model
+
+In this case, the standard error on `median_income16_1k` can be recovered by estimating `prcnt_GOP16` using both `median_income16_1k` and the *residuals* of `prcnt_black` from Model \ref{x1predbyx2}. This finding holds for all models I have tried it on. See the author's note above for more details.
+
+The residuals model uses the residuals in Model \ref{x1predbyx2} to replace $x_2$ in the full model (Model \ref{ypredbyx1x2}). To estimate this model, we start by adding a column of residual values from Model \ref{x1predbyx2} to `la_counties`.
+
+```{r}
+la_counties$resid_black_predby_income <- residuals(model3)
+```
+
+Then we estimate Model \ref{ypredbyx1resids}
+
+\begin{align}
+y =& \beta_1^{''} x_1 +\beta_2^{''} x^{''}_2 + \beta^{''}_0 +\epsilon^{''} \label{ypredbyx1resids}\\
+\text{% GOP} =& \beta^{''}_1*\text{median-income16} + \beta^{''}_1*\text{resid-black-predby-income}+\beta^{''}_0 + \epsilon^{''} \nonumber
+\end{align}
+
+```{r}
+model_blackresids <- lm(prcnt_GOP16~median_income16_1k+resid_black_predby_income, 
+                        data = la_counties)
+```
+
+Finally, we compare the results from three models:
+
+-   Model \ref{ypredbyx1}: `prcnt_GOP16` \~ `median_income16_1k`
+-   Model \ref{ypredbyx1x2}: `prcnt_GOP16` \~ `median_income16_1k` + `prcnt_black`
+-   Model \ref{ypredbyx1resids}: `prcnt_GOP16` \~ `median_income16_1k` + `resid_black_predby_income`
+
+```{r, results = 'asis'}
+stargazer(model1, model2, model_blackresids, 
+          # type = "text",
+          type = "html",
+          model.numbers = F,
+          column.labels =  c("1","2","4"))
+```
+
+
+## Create predicted values data from residuals model
+
+Recall that in "Visualizing a Direction in Model 1 with the Same Predicted Values as the Nested Model" we generated a dataset of predicted values for `prcnt_GOP16` in the regression surface of Model \ref{ypredbyx1x2} along the line of best fit for Model \ref{x1predbyx2}. We do the same process, with a few tweaks, to generate the predicted values and standard errors for `prcnt_GOP16` from Model \ref{ypredbyx1resids}. This allows us to check the predicted values from the two models against each other. The steps to generate this dataset are shown below.
+
+1.  `model_blackresids_shifted`: The regression surface of the residuals model will be centered at $(x_1, x_2)$ = (mean(`median_income_1k`), 0) because the residuals `resid_black_predby_income` are centered at 0. In order to recover the appropriate estimates and standard errors for `prcnt_GOP16` we can translate the regression surface so that it is centered at (mean(`median_income_1k`), mean(`prcnt_black`)). This is done by adding the mean of `prcnt_black` back to the residuals `resid_black_predby_income` and reestimating the residuals model in `model_blackresids_shifted`. We can compare the `model_blackresids_shifted` and `model_blackresids` to verify that they produce the same marginal effects with a different constant value.
+```{r}
+la_counties$resid_black_predby_income_shifted <- la_counties$resid_black_predby_income +
+  mean(la_counties$prcnt_black,na.rm=T)
+
+model_blackresids_shifted <- lm(prcnt_GOP16 ~ median_income16_1k+resid_black_predby_income_shifted, 
+                        data = la_counties)
+stargazer(model_blackresids, model_blackresids_shifted, 
+          # type = "text", 
+          type = "html",
+          model.numbers = F)
+
+```
+2.  `income_seq`: As in the prior section, these are regularly spaced values from the minimum to maximum values of `median_income16_1k`. 
+```{r, include = FALSE}
+income_seq <-  seq(min(la_counties$median_income16_1k, na.rm=TRUE),
+                   max(la_counties$median_income16_1k, na.rm=TRUE),
+                   length.out=10) 
+income_seq <- data.frame(median_income16_1k =income_seq)
+```
+3. `prcntblack_seq`: The sequence of values for `resid_black_predby_income_shifted` are the repeated mean values of `prcnt_black`. This ensures that we retrieve the predicted values for $y$ for the reported marginal effect of `median_income16_1k`, which holds $x_2$ =  `resid_black_predby_income_shifted` constant.
+```{r}
+prcntblack_seq <-  rep(mean(la_counties$prcnt_black, na.rm=TRUE), 10)
+income_edu_data <- data.frame(median_income16_1k = income_seq,
+                              resid_black_predby_income_shifted = prcntblack_seq)
+```
+4.  We predict the values and 95\% confidence intervals for `prcnt_GOP16` for the each pair of values for `median_income16_1k` and `prcntblack_seq` using the residuals model `model_blackresids_shifted`.
+```{r}
+predicted_gop_resid_model <- predict(object = model_blackresids_shifted, 
+                                     newdata = income_edu_data, interval = "confidence") %>%
+  as.data.frame(.)
+```
+
+## Comparing predicted values from the residuals model and the $\gamma_1$ direction in the full model
+```{r, include = F}
+predicted_prcnt_black <- predict(object = model3, newdata = income_seq)
+income_edu_data <- data.frame(median_income16_1k = income_seq,
+                              prcnt_black = predicted_prcnt_black)
+predicted_gop <- predict(object = model2, newdata = income_edu_data, interval = "confidence") %>%
+  as.data.frame(.)
+simulated_data_model2 <- data.frame(median_income16_1k = income_seq,
+                                    prcnt_black = predicted_prcnt_black,
+                                    prcnt_GOP16 = predicted_gop$fit,
+                                    lowerCI = predicted_gop$lwr,
+                                    upperCI = predicted_gop$upr)
+```
+Finally, we compare the predicted values and confidence intervals for `prcnt_GOP16` from the full model (Model \ref{ypredbyx1x2}) and the residuals model (Model \ref{ypredbyx1resids}).
+
+```{r}
+cbind(predicted_gop_resid_model, simulated_data_model2[,c("prcnt_GOP16", "lowerCI","upperCI")] )
+```
+
+## Visualizing the Standard Errors for $\beta^{'''}_1$ from the Residuals Model in Model 2
+
+To visualize these estimated values, we create a dataset that __regress3d__ can use to plot the estimated values and confidence intervals for `prcnt_GOP16` based on `model_blackresids_shifted`.
+```{r}
+simulated_data_modelresids <- data.frame(median_income16_1k = income_seq,
+                                    prcnt_black = predicted_prcnt_black,
+                                    prcnt_GOP16 = predicted_gop$fit,
+                                    lowerCI = predicted_gop$lwr,
+                                    upperCI = predicted_gop$upr)
+```
+
+Then we plot estimates for the $\gamma_1$ direction in Model \ref{ypredbyx1x2} in [green]{style="color: green;"} and the estimates for the residuals model in [yellow]{style="color: yellow;background-color: grey;"}. 
+
+As expected, the [yellow]{style="color: yellow;background-color: grey;"} line fits precisely into the regression surface in the direction of $\gamma_1$. The  [green]{style="color: green;"} is hidden below the [yellow]{style="color: yellow;background-color: grey;"} because they are identical. To reveal the [green]{style="color: green;"} line, click the legend for the [yellow]{style="color: yellow;background-color: grey;"} line to hide it.
+
+```{r}
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  add_direction(model = model2, direction_data = simulated_data_model2,
+                linecolor = "limegreen",
+                direction_name = "The &#947; direction in Model 2:
+                prcnt_GOP16 ~ median_income16_1k + prcnt_black") %>%
+  add_direction(model = model2, direction_data = simulated_data_modelresids,
+                linecolor = "yellow",
+                direction_name = "Predicted values from residuals model:
+                prcnt_GOP16 ~ median_income16_1k + resid_black_predby_income_shifted") %>%
+  layout(legend = list(orientation = 'h'))
+```
+
+## Takeaways
+
+-   The estimated coefficients for `median_income16_1k` in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are identical.
+-   The estimated standard errors in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are different.
+-   In this case and many others, the estimated standard error in the direction of Model \ref{x1predbyx2}'s $\gamma_1$ in the full model (Model \ref{ypredbyx1x2}) is the same as the estimated standard error in Model \ref{ypredbyx1resids}.
+
+```{r, include = F, eval=F}
+
+
+
+#mean centering variables
+x1 <-la_counties$median_income16_1k - mean(la_counties$median_income16_1k , na.rm=T)
+x2 <-la_counties$prcnt_black - mean(la_counties$prcnt_black , na.rm=T)
+x <- cbind(x1,x2)
+y <- la_counties$prcnt_GOP16 - mean(la_counties$prcnt_GOP16 , na.rm=T)
+
+# Calculating variance and std dev
+sigma_full <- summary(model2)$sigma^2
+#hand calculating sigma_full
+beta <- summary(tmp)$coefficients[c("x1", "x2"), "Estimate"]
+(t(y)%*%y - t(beta)%*%t(x)%*%y)/(length(x1)-length(beta)-1)
+# double checking variance in mean centered model
+tmp <- lm(y~x1+x2) 
+summary(tmp)$sigma^2 #var in mean centered model is same
+
+x1transpx1inv <-( t(x1)%*%x1 )^(-1)
+
+xtranspxinv <-( t(x)%*%x )^(-1)
+gamma <- summary(model3)$coefficients["median_income16_1k","Estimate"]
+gamma <- x1transpx1inv%*%t(x1)%*%x2
+gamma_mat <- matrix(c(1, gamma), ncol = 2)
+
+#calculating variance for rotated variables
+var <- sigma_full*gamma_mat%*%xtranspxinv%*%t(gamma_mat)
+sqrt(var)
+
+# trying to create rotated x vars
+rotation_matrix <- matrix(c(1, gamma, -gamma, 1), nrow = 2)
+a <- rotation_matrix[1,1]
+b <- rotation_matrix[2,1]
+rotation_matrix <- rotation_matrix*(1/sqrt((a^2 + b^2) ))
+a <- rotation_matrix[1, 1]
+b <- rotation_matrix[2, 1]
+mean_x1 <- mean(la_counties$median_income16_1k , na.rm=T)
+mean_x2 <- mean(la_counties$prcnt_black , na.rm=T)
+
+la_counties$rotation1 <- a*la_counties$median_income16_1k +b*la_counties$prcnt_black  - a*mean_x1 - b*mean_x2
+la_counties$rotation.orth <- -b*la_counties$median_income16_1k +a*la_counties$prcnt_black  + b*mean_x1 - a*mean_x2
+
+units.of.x1.adjustment <- 1/sqrt(1^2 + gamma^2)
+la_counties$rotation1_adj <- la_counties$rotation1*units.of.x1.adjustment
+la_counties$rotation.orth_adj <- la_counties$rotation.orth*units.of.x1.adjustment
+
+lm(la_counties$prcnt_GOP16 ~la_counties$rotation1 +la_counties$rotation.orth) %>% summary(.)
+lm(la_counties$prcnt_GOP16 ~la_counties$rotation1_adj +la_counties$rotation.orth_adj) %>% summary(.)
+model_rotated <- lm(la_counties$prcnt_GOP16 ~la_counties$rotation1_adj +la_counties$rotation.orth_adj) 
+
+x1_r <- la_counties$rotation1_adj
+x2_r <- la_counties$rotation.orth_adj
+
+x_r <- cbind(1, x1_r, x2_r)
+xtranspxinv_r <-( t(x_r)%*%x_r )^(-1)
+var_r <- sigma_full*xtranspxinv_r[1,1]
+var_r <- sigma_full*xtranspxinv_r[2,2]
+sqrt(var_r)
+
+stargazer(model1, model2, model_eduresids, model_rotated,
+          type = "text",
+          # type = "html",
+          model.numbers = F,
+          column.labels =  c("1","2","residuals", "rotated"))
+
+```
+
+```{r, include=F, eval = F}
+la_counties$resid_black_predby_income_shifted <- la_counties$resid_black_predby_income +
+  mean(la_counties$prcnt_black,na.rm=T)
+
+model_blackresids_shifted <- lm(prcnt_GOP16~median_income16_1k+resid_black_predby_income_shifted, 
+                        data = la_counties)
+
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  add_marginals(model = model2,
+                omit_x1=T,
+                x2_direction_name ="Marginal effect of education")%>%
+  add_3d_surface(model = model_blackresids_shifted)%>%
+  add_marginals(model = model_blackresids_shifted,
+                x1_direction_name ="Marginal effect of income",
+                x1_color = "grey",
+                x2_direction_name ="Marginal effect of the residuals of education",
+                x2_color = "darkgrey") %>%
+  # add_direction(model = model2, direction_data = simulated_data_nested_model,
+  #               direction_name = "Nested model: prcnt_GOP16 ~ median_income16_1k,<br> omitting prcnt_black") %>%
+  add_direction(model = model2, direction_data = simulated_data_model2,
+                linecolor = "green",
+                direction_name = "A direction in Model 2:<br>prcnt_GOP16 ~ median_income16_1k + prcnt_black")
+```
+
