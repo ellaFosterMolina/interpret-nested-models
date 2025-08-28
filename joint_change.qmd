@@ -97,7 +97,7 @@ stargazer(model1, model2, model3,
           column.labels =  c("1","2","3"))
 ```
 
-In general, a one unit change in $x_1$ *and* a $\gamma_1$ unit change in $x_2$ are associated with a $\beta_1$ change in $y$.
+In general, a one unit change in $x_1$ *and* a $\hat{\gamma}_1$ unit change in $x_2$ are associated with a $\hat{\beta}_1$ change in $y$.
 
 
 
