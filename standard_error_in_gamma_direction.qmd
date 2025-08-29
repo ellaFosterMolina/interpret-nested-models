@@ -18,9 +18,9 @@ model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
 
 ```
 
-# An Approach for Extracting Standard Errors in the $\hat{\gamma}_1$ Direction {#sec-stderrors}
+# An Approach for Extracting Standard Errors in the $\left[\begin{smallmatrix}1\\\hat{\gamma_1}\end{smallmatrix}\right]$ Direction {#sec-stderrors}
 
-It is not standard practice to estimate standard errors in the $\hat{\gamma}_1$ direction of Model \ref{ypredbyx1x2}. However, they can be recovered. This section demonstrates one possible way to recover them using the residuals model. See authors note for more details.
+It is not standard practice to estimate standard errors in the $\left[\begin{smallmatrix}1\\\hat{\gamma_1}\end{smallmatrix}\right]$ direction of Model \ref{ypredbyx1x2}. However, they can be recovered. This section demonstrates one possible way to recover them using the residuals model. See authors note for more details.
 
 For reference, the equation for the estimated values of the nested model (Model \ref{ypredbyx1}) is:
 
@@ -43,7 +43,7 @@ The estimated values for the model that defines the direction of the change in $
 \hat{\text{prcnt-black}} =& \hat{\gamma}_1*\text{median-income16-1k} + \hat{\gamma}_0. \nonumber
 \end{align}
 
-[*Author's note*]{.underline}*: A pdf with the proof that this holds for all linear nested models of this type (one * $x$ *variable in the nested model, two * $x$ *variables in the full model) can be found at my [github repository](https://github.com/ellaFosterMolina/interpret-nested-models/blob/master/interpret-nested-models-rotations.pdf) for this document. I do not have a general proof that the standard error for* $\hat{\beta}^{'''}_1$ *in the residuals model (defined below) is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\hat{\beta}_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
+[*Author's note*]{.underline}*: A pdf with the proof that this holds for all linear nested models of this type (one * $x$ *variable in the nested model, two * $x$ *variables in the full model) can be found at my [github repository](https://github.com/ellaFosterMolina/interpret-nested-models/blob/master/interpret-nested-models-rotations.pdf) for this document. I do not have a general proof that the standard error for* $\hat{\beta}^{'''}_1$ *in the residuals model (defined below) is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\hat{\beta}_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the* $\left[\begin{smallmatrix}1\\\hat{\gamma_1}\end{smallmatrix}\right]$ *direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
 
 ## Estimating the Residuals model
 
@@ -148,7 +148,7 @@ simulated_data_modelresids <- data.frame(median_income16_1k = income_seq,
                                     upperCI = predicted_gop$upr)
 ```
 
-Then we plot estimates for the $\hat{\gamma}_1$ direction in Model \ref{ypredbyx1x2} in [green]{style="color: green;"} and the estimates for the residuals model (Model \ref{ypredbyx1resids} in [yellow]{style="color: yellow;background-color: grey;"}. 
+Then we plot estimates for the $\left[\begin{smallmatrix}1\\\hat{\gamma_1}\end{smallmatrix}\right]$ direction in Model \ref{ypredbyx1x2} in [green]{style="color: green;"} and the estimates for the residuals model (Model \ref{ypredbyx1resids} in [yellow]{style="color: yellow;background-color: grey;"}. 
 
 As expected, the [yellow]{style="color: yellow;background-color: grey;"} line fits precisely into the regression surface in the direction of $\gamma_1$. The  [green]{style="color: green;"} is hidden below the [yellow]{style="color: yellow;background-color: grey;"} because they are identical. To reveal the [green]{style="color: green;"} line, click the legend for the [yellow]{style="color: yellow;background-color: grey;"} line to hide it.
 
@@ -175,7 +175,7 @@ plot_ly( data = la_counties,
 
 -   The estimated coefficient for `median_income16_1k` in Models \ref{ypredbyx1} ($\hat{\beta}_1$) and \ref{ypredbyx1resids}  ($\hat{\beta}^{''}_1$) are identical.
 -   The estimated standard errors in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are different.
--   In this case and many others, the estimated standard error of the full model (Model \ref{ypredbyx1x2}) in the direction of Model \ref{x1predbyx2}'s $\hat{\gamma}_1$ is the same as the estimated standard error of $\hat{\beta}^{''}_1$ in Model \ref{ypredbyx1resids}.
+-   In this case and many others, the estimated standard error of the full model (Model \ref{ypredbyx1x2}) in the direction of Model \ref{x1predbyx2}'s $\left[\begin{smallmatrix}1\\\hat{\gamma_1}\end{smallmatrix}\right]$ is the same as the estimated standard error of $\hat{\beta}^{''}_1$ in Model \ref{ypredbyx1resids}.
 
 ```{r, include = F, eval=F}
 
