@@ -171,7 +171,7 @@ plot_ly( data = la_counties,
   layout(legend = list(orientation = 'h'))
 ```
 
-## Takeaways
+## Results
 
 -   The estimated coefficient for `median_income16_1k` in Models \ref{ypredbyx1} ($\hat{\beta}_1$) and \ref{ypredbyx1resids}  ($\hat{\beta}^{''}_1$) are identical.
 -   The estimated standard errors in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are different.
