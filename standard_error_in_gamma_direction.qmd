@@ -18,32 +18,32 @@ model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
 
 ```
 
-# An Approach for Extracting Standard Errors in the $\gamma_1$ Direction {#sec-stderrors}
+# An Approach for Extracting Standard Errors in the $\hat{\gamma}_1$ Direction {#sec-stderrors}
 
-It is not standard practice to estimate standard errors in the $\gamma_1$ direction of the full model. However, they can be recovered. This section demonstrates one possible way to recover them using the residuals model. See authors note for more details.
+It is not standard practice to estimate standard errors in the $\hat{\gamma}_1$ direction of Model \ref{ypredbyx1x2}. However, they can be recovered. This section demonstrates one possible way to recover them using the residuals model. See authors note for more details.
 
-[*Author's note*]{.underline}*: I have a general proof of the numerical findings in the previous section: the estimate of* $\beta_1$ *in the nested linear model is the same as the change in* $y$ *in the gamma_1 direction specified by Model* \ref{x1predbyx2} *in the regression surface in the full linear model. I do not have a general proof that the standard error for* $\beta^{'''}_1$ *in the residuals model is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\beta_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the gamma_1 direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
-
-For reference, the nested model is defined as Model \ref{ypredbyx1}:
+For reference, the equation for the estimated values of the nested model (Model \ref{ypredbyx1}) is:
 
 \begin{align}
-y =& \beta_1 x_1 + \beta_0 +\epsilon \label{ypredbyx1}\\
-\text{r-shift} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon \nonumber.
+\hat{y} =& \hat{\beta}_1 x_1 + \hat{\beta}_0. \label{ypredbyx1} \\
+\hat{\text{prcnt-GOP16}} =& \hat{\beta}_1*\text{median-income16-1k} + \hat{\beta}_0. \nonumber
 \end{align}
 
-The full model is defined as as Model \ref{ypredbyx1x2}:
+The equation for the estimated values of the full model (Model \ref{ypredbyx1x2}) is:
 
 \begin{align}
-y =& \beta'_1 x_1 +\beta'_2 x_2 + \beta'_0 +\epsilon' \label{ypredbyx1x2}\\
-\text{r-shift} =& \beta'_1*\text{median-income16-1k} +\beta'_2*\text{% Black} + \beta'_0 + \epsilon'. \nonumber
+\hat{y} =& \hat{\beta}'_1 x_1 +\hat{\beta}'_2 x_2 + \hat{\beta}'_0 \label{ypredbyx1x2} \\
+\hat{\text{prcnt-GOP16}} =& \hat{\beta}'_1*\text{median-income16-1k} +\hat{\beta}'_2*\text{prcnt-black} + \hat{\beta}'_0. \nonumber
 \end{align}
 
-The model that defines the direction of the change in $y$ in the nested model is Model \ref{x1predbyx2}:
+The estimated values for the model that defines the direction of the change in $y$ in the nested model are generated from Model \ref{x1predbyx2}:
 
 \begin{align}
-  x_2 =& \gamma_{1} x_1 + \gamma_{0} +\epsilon_{\gamma} \label{x1predbyx2}\\
-\text{% Black} =& \beta_1*\text{median-income16-1k} + \beta_0 + \epsilon. \nonumber
+\hat{x}_2 =& \hat{\gamma}_1 x_1 + \hat{\gamma}_0 \label{x1predbyx2} \\
+\hat{\text{prcnt-black}} =& \hat{\gamma}_1*\text{median-income16-1k} + \hat{\gamma}_0. \nonumber
 \end{align}
+
+[*Author's note*]{.underline}*: I have a general proof of the numerical findings in the previous section: the estimate of* $\hat{\beta}_1$ *in the nested linear model is the same as the change in* $\hat{y}$ *in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the regression surface in the full linear model. I do not have a general proof that the standard error for* $\hat{\beta}^{'''}_1$ *in the residuals model (defined below) is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\hat{\beta}_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
 
 ## Estimating the Residuals model
 
@@ -58,8 +58,8 @@ la_counties$resid_black_predby_income <- residuals(model3)
 Then we estimate Model \ref{ypredbyx1resids}
 
 \begin{align}
-y =& \beta_1^{''} x_1 +\beta_2^{''} x^{''}_2 + \beta^{''}_0 +\epsilon^{''} \label{ypredbyx1resids}\\
-\text{% GOP} =& \beta^{''}_1*\text{median-income16} + \beta^{''}_1*\text{resid-black-predby-income}+\beta^{''}_0 + \epsilon^{''} \nonumber
+\hat{y} =& \hat{\beta}_1^{''} x_1 +\hat{\beta}_2^{''} x^{''}_2 + \hat{\beta}^{''}_0 \label{ypredbyx1resids}\\
+\hat{\text{prcnt-GOP16}} =& \hat{\beta}^{''}_1*\text{median-income16} + \\ &\hat{\beta}^{''}_2*\text{resid-black-predby-income}+\hat{\beta}^{''}_0 \nonumber
 \end{align}
 
 ```{r}
@@ -75,7 +75,6 @@ Finally, we compare the results from three models:
 
 ```{r, results = 'asis'}
 stargazer(model1, model2, model_blackresids, 
-          # type = "text",
           type = "html",
           model.numbers = F,
           column.labels =  c("1","2","4"))
@@ -84,17 +83,16 @@ stargazer(model1, model2, model_blackresids,
 
 ## Create predicted values data from residuals model
 
-Recall that in "Visualizing a Direction in Model 1 with the Same Predicted Values as the Nested Model" we generated a dataset of predicted values for `prcnt_GOP16` in the regression surface of Model \ref{ypredbyx1x2} along the line of best fit for Model \ref{x1predbyx2}. We do the same process, with a few tweaks, to generate the predicted values and standard errors for `prcnt_GOP16` from Model \ref{ypredbyx1resids}. This allows us to check the predicted values from the two models against each other. The steps to generate this dataset are shown below.
+Recall that in @sec-viznest and @sec-visdir we generated a dataset of predicted values for `prcnt_GOP16` in the regression surface of Model \ref{ypredbyx1x2} along the line of best fit for Model \ref{x1predbyx2}. We do the same process, with a few tweaks, to generate the predicted values and standard errors for `prcnt_GOP16` from Model \ref{ypredbyx1resids}. This allows us to check the predicted values from the two models against each other. The steps to generate this dataset are shown below.
 
 1.  `model_blackresids_shifted`: The regression surface of the residuals model will be centered at $(x_1, x_2)$ = (mean(`median_income_1k`), 0) because the residuals `resid_black_predby_income` are centered at 0. In order to recover the appropriate estimates and standard errors for `prcnt_GOP16` we can translate the regression surface so that it is centered at (mean(`median_income_1k`), mean(`prcnt_black`)). This is done by adding the mean of `prcnt_black` back to the residuals `resid_black_predby_income` and reestimating the residuals model in `model_blackresids_shifted`. We can compare the `model_blackresids_shifted` and `model_blackresids` to verify that they produce the same marginal effects with a different constant value.
-```{r}
+```{r, results = "asis"}
 la_counties$resid_black_predby_income_shifted <- la_counties$resid_black_predby_income +
   mean(la_counties$prcnt_black,na.rm=T)
 
 model_blackresids_shifted <- lm(prcnt_GOP16 ~ median_income16_1k+resid_black_predby_income_shifted, 
                         data = la_counties)
 stargazer(model_blackresids, model_blackresids_shifted, 
-          # type = "text", 
           type = "html",
           model.numbers = F)
 
@@ -132,7 +130,7 @@ simulated_data_model2 <- data.frame(median_income16_1k = income_seq,
                                     lowerCI = predicted_gop$lwr,
                                     upperCI = predicted_gop$upr)
 ```
-Finally, we compare the predicted values and confidence intervals for `prcnt_GOP16` from the full model (Model \ref{ypredbyx1x2}) and the residuals model (Model \ref{ypredbyx1resids}).
+Finally, we compare the predicted values and confidence intervals for `prcnt_GOP16` from the full model (Model \ref{ypredbyx1x2}) and the residuals model (Model \ref{ypredbyx1resids}). The calculations are not shown here, but they are the same to within 14 significant digits, which is within the precision with which R estimates values.
 
 ```{r}
 cbind(predicted_gop_resid_model, simulated_data_model2[,c("prcnt_GOP16", "lowerCI","upperCI")] )
@@ -149,7 +147,7 @@ simulated_data_modelresids <- data.frame(median_income16_1k = income_seq,
                                     upperCI = predicted_gop$upr)
 ```
 
-Then we plot estimates for the $\gamma_1$ direction in Model \ref{ypredbyx1x2} in [green]{style="color: green;"} and the estimates for the residuals model in [yellow]{style="color: yellow;background-color: grey;"}. 
+Then we plot estimates for the $\hat{\gamma}_1$ direction in Model \ref{ypredbyx1x2} in [green]{style="color: green;"} and the estimates for the residuals model (Model \ref{ypredbyx1resids} in [yellow]{style="color: yellow;background-color: grey;"}. 
 
 As expected, the [yellow]{style="color: yellow;background-color: grey;"} line fits precisely into the regression surface in the direction of $\gamma_1$. The  [green]{style="color: green;"} is hidden below the [yellow]{style="color: yellow;background-color: grey;"} because they are identical. To reveal the [green]{style="color: green;"} line, click the legend for the [yellow]{style="color: yellow;background-color: grey;"} line to hide it.
 
@@ -174,9 +172,9 @@ plot_ly( data = la_counties,
 
 ## Takeaways
 
--   The estimated coefficients for `median_income16_1k` in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are identical.
+-   The estimated coefficient for `median_income16_1k` in Models \ref{ypredbyx1} ($\hat{\beta}_1$) and \ref{ypredbyx1resids}  ($\hat{\beta}^{''}_1$) are identical.
 -   The estimated standard errors in Models \ref{ypredbyx1} and \ref{ypredbyx1resids} are different.
--   In this case and many others, the estimated standard error in the direction of Model \ref{x1predbyx2}'s $\gamma_1$ in the full model (Model \ref{ypredbyx1x2}) is the same as the estimated standard error in Model \ref{ypredbyx1resids}.
+-   In this case and many others, the estimated standard error of the full model (Model \ref{ypredbyx1x2}) in the direction of Model \ref{x1predbyx2}'s $\hat{\gamma}_1$ is the same as the estimated standard error of $\hat{\beta}^{''}_1$ in Model \ref{ypredbyx1resids}.
 
 ```{r, include = F, eval=F}
 
