@@ -9,7 +9,44 @@ knitr::opts_chunk$set(
 
 # Defining and Estimating the Nested Models
 
-A model nested within another model is one where the nested model has a subset of the variables in the larger model. This article will visualize these models using a simple case where the nested model has one $x$ variable, and the full model has two $x$ variables. Reproducible R code is included throughout to allow the reader to verify each step and generate their own results.
+A model nested within another model is one where the nested model has a subset of the variables in the larger model. This article will visualize these models using a simple case where the nested model has one $x$ variable, and the full model has two $x$ variables. It will also demonstrate a method to generally recover standard errors congruent with the regression surface from the full model instead of the standard errors from the nested model.
+
+As a preview, the nested model inside the regression surface is shown below. Reproducible R code is included throughout to allow the reader to verify, replicate, and modify (if desired) each step required to generate this image. 
+
+```{r, echo = FALSE}
+library(regress3d)
+library(plotly)
+library(stargazer)
+la_counties <- subset(county_data, state_abbrv == "LA")
+model1 <- lm(prcnt_GOP16 ~ median_income16_1k,  data = la_counties)
+model2 <- lm(prcnt_GOP16 ~ median_income16_1k + prcnt_black, data = la_counties)
+model3 <- lm(prcnt_black ~ median_income16_1k, data = la_counties)
+income_seq <-  seq(min(la_counties$median_income16_1k, na.rm=TRUE),
+                   max(la_counties$median_income16_1k, na.rm=TRUE),
+                   length.out=10) 
+income_seq <- data.frame(median_income16_1k =income_seq)
+predicted_gop <- predict(object = model1, newdata = income_seq, 
+                         interval = "confidence") %>%
+  as.data.frame(.)
+predicted_prcnt_black <- predict(object = model3, newdata = income_seq)
+simulated_data_nested_model <- data.frame(median_income16_1k = income_seq,
+                                          prcnt_black = predicted_prcnt_black,
+                                          prcnt_GOP16 = predicted_gop$fit,
+                                          lowerCI = predicted_gop$lwr,
+                                          upperCI = predicted_gop$upr)
+plot_ly( data = la_counties,
+         x = ~median_income16_1k,
+         y = ~prcnt_black,
+         z = ~prcnt_GOP16) %>%
+  add_markers(size = ~pop_estimate16, color = I("black"),
+              name = "Louisiana counties") %>%
+  add_3d_surface(model = model2)%>%
+  add_direction(model = model2, direction_data = simulated_data_nested_model,
+                direction_name = "Nested model: 
+                prcnt_GOP16 ~ median_income16_1k, omitting prcnt_black") %>%
+  layout(legend = list(orientation = 'h'))
+```
+
 
 ## Models
 
