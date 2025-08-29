@@ -43,11 +43,11 @@ The estimated values for the model that defines the direction of the change in $
 \hat{\text{prcnt-black}} =& \hat{\gamma}_1*\text{median-income16-1k} + \hat{\gamma}_0. \nonumber
 \end{align}
 
-[*Author's note*]{.underline}*: I have a general proof of the numerical findings in the previous section: the estimate of* $\hat{\beta}_1$ *in the nested linear model is the same as the change in* $\hat{y}$ *in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the regression surface in the full linear model. I do not have a general proof that the standard error for* $\hat{\beta}^{'''}_1$ *in the residuals model (defined below) is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\hat{\beta}_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
+[*Author's note*]{.underline}*: A pdf with the proof that this holds for all linear nested models of this type (one * $x$ *variable in the nested model, two * $x$ *variables in the full model) can be found at my [github repository](https://github.com/ellaFosterMolina/interpret-nested-models/blob/master/interpret-nested-models-rotations.pdf) for this document. I do not have a general proof that the standard error for* $\hat{\beta}^{'''}_1$ *in the residuals model (defined below) is the same as the standard error in the regression surface in the direction specified by Model* \ref{x1predbyx2}*. However, I do have a proof (available upon request) for a method that simultaneously retrieves both the estimate of* $\hat{\beta}_1$ *and the standard error from Model* \ref{ypredbyx1x2}*. The standard errors for this method have agreed with the standard errors in the residuals model across hundreds of different regressions. However, I cannot currently guarantee that the residuals model will always produce the standard errors in the* $\hat{\gamma}_1$ *direction specified by Model* \ref{x1predbyx2} *in the full linear model.*
 
 ## Estimating the Residuals model
 
-In this case, the standard error on `median_income16_1k` can be recovered by estimating `prcnt_GOP16` using both `median_income16_1k` and the *residuals* of `prcnt_black` from Model \ref{x1predbyx2}. This finding holds for all models I have tried it on. See the author's note above for more details.
+In this case, the standard error on `median_income16_1k` can be recovered by estimating `prcnt_GOP16` using both `median_income16_1k` and the *residuals* of `prcnt_black` from Model \ref{x1predbyx2}. See the author's note above for more details.
 
 The residuals model uses the residuals in Model \ref{x1predbyx2} to replace $x_2$ in the full model (Model \ref{ypredbyx1x2}). To estimate this model, we start by adding a column of residual values from Model \ref{x1predbyx2} to `la_counties`.
 
@@ -83,9 +83,9 @@ stargazer(model1, model2, model_blackresids,
 
 ## Create predicted values data from residuals model
 
-Recall that in @sec-viznest and @sec-visdir we generated a dataset of predicted values for `prcnt_GOP16` in the regression surface of Model \ref{ypredbyx1x2} along the line of best fit for Model \ref{x1predbyx2}. We do the same process, with a few tweaks, to generate the predicted values and standard errors for `prcnt_GOP16` from Model \ref{ypredbyx1resids}. This allows us to check the predicted values from the two models against each other. The steps to generate this dataset are shown below.
+Recall that in @sec-viznest and @sec-vizdir we generated a data set of predicted values for `prcnt_GOP16` in the regression surface of Model \ref{ypredbyx1x2} along the line of best fit for Model \ref{x1predbyx2}. We do the same process, with a few tweaks, to generate the predicted values and standard errors for `prcnt_GOP16` from Model \ref{ypredbyx1resids}. This allows us to check the predicted values from the two models against each other. The steps to generate this data set are shown below.
 
-1.  `model_blackresids_shifted`: The regression surface of the residuals model will be centered at $(x_1, x_2)$ = (mean(`median_income_1k`), 0) because the residuals `resid_black_predby_income` are centered at 0. In order to recover the appropriate estimates and standard errors for `prcnt_GOP16` we can translate the regression surface so that it is centered at (mean(`median_income_1k`), mean(`prcnt_black`)). This is done by adding the mean of `prcnt_black` back to the residuals `resid_black_predby_income` and reestimating the residuals model in `model_blackresids_shifted`. We can compare the `model_blackresids_shifted` and `model_blackresids` to verify that they produce the same marginal effects with a different constant value.
+1.  `model_blackresids_shifted`: The regression surface of the residuals model will be centered at $(x_1, x_2)$ = (mean(`median_income_1k`), 0) because the residuals `resid_black_predby_income` are centered at 0. In order to recover the appropriate estimates and standard errors for `prcnt_GOP16` we can translate the regression surface so that it is centered at (mean(`median_income_1k`), mean(`prcnt_black`)). This is done by adding the mean of `prcnt_black` back to the residuals `resid_black_predby_income` and re-estimating the residuals model in `model_blackresids_shifted`. We can compare the `model_blackresids_shifted` and `model_blackresids` to verify that they produce the same marginal effects with a different constant value.
 ```{r, results = "asis"}
 la_counties$resid_black_predby_income_shifted <- la_counties$resid_black_predby_income +
   mean(la_counties$prcnt_black,na.rm=T)
@@ -97,7 +97,7 @@ stargazer(model_blackresids, model_blackresids_shifted,
           model.numbers = F)
 
 ```
-2.  `income_seq`: As in the prior section, these are regularly spaced values from the minimum to maximum values of `median_income16_1k`. 
+2.  `income_seq`: As in @sec-viz, these are regularly spaced values from the minimum to maximum values of `median_income16_1k`. 
 ```{r, include = FALSE}
 income_seq <-  seq(min(la_counties$median_income16_1k, na.rm=TRUE),
                    max(la_counties$median_income16_1k, na.rm=TRUE),
@@ -113,7 +113,8 @@ income_edu_data <- data.frame(median_income16_1k = income_seq,
 4.  We predict the values and 95\% confidence intervals for `prcnt_GOP16` for the each pair of values for `median_income16_1k` and `prcntblack_seq` using the residuals model `model_blackresids_shifted`.
 ```{r}
 predicted_gop_resid_model <- predict(object = model_blackresids_shifted, 
-                                     newdata = income_edu_data, interval = "confidence") %>%
+                                     newdata = income_edu_data, 
+                                     interval = "confidence") %>%
   as.data.frame(.)
 ```
 
@@ -138,7 +139,7 @@ cbind(predicted_gop_resid_model, simulated_data_model2[,c("prcnt_GOP16", "lowerC
 
 ## Visualizing the Standard Errors for $\beta^{'''}_1$ from the Residuals Model in Model 2
 
-To visualize these estimated values, we create a dataset that __regress3d__ can use to plot the estimated values and confidence intervals for `prcnt_GOP16` based on `model_blackresids_shifted`.
+To visualize these estimated values, we create a data set that __regress3d__ can use to plot the estimated values and confidence intervals for `prcnt_GOP16` based on `model_blackresids_shifted`.
 ```{r}
 simulated_data_modelresids <- data.frame(median_income16_1k = income_seq,
                                     prcnt_black = predicted_prcnt_black,
