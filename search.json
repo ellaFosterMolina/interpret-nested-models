@@ -34,7 +34,7 @@
     "href": "index.html#r-setup",
     "title": "Interpreting and Visualizing Nested Models in 3D",
     "section": "1.3 R Setup",
-    "text": "1.3 R Setup\nThree R packages are needed for this exercise:\n\nplotly and regress3d to plot regression surfaces in 3 dimensions.\nstargazer to create regression tables.\n\n\n# The package regress3d is available on github\nif (!require(\"devtools\")) {\n  install.packages(\"devtools\")\n}\n\ndevtools::install_github(\"ellaFosterMolina/regress3d\")\n\nlibrary(regress3d)\nlibrary(plotly)\nlibrary(stargazer)",
+    "text": "1.3 R Setup\nThree R packages are needed for this exercise:\n\nplotly and regress3d to plot regression surfaces in 3 dimensions, and\nstargazer to create regression tables.\n\n\nlibrary(regress3d)\nlibrary(plotly)\nlibrary(stargazer)",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Defining and Estimating the Nested Models</span>"
     ]
@@ -44,7 +44,7 @@
     "href": "index.html#data",
     "title": "Interpreting and Visualizing Nested Models in 3D",
     "section": "1.4 Data",
-    "text": "1.4 Data\nThe data used for this example is demographic and voting measures for all counties in the state of Louisiana in 2016 from the package regress3d. We could use data for all counties in the US, but limiting the analysis to Louisiana will highlight the differences in standard errors for Model \\(\\ref{ypredbyx1}\\) and Model \\(\\ref{ypredbyx1x2}\\).\n\nprcnt_GOP16: the percent of the county that voted for Donald Trump in 2016.\nmedian_income16_1k: median income measured in units of $1,000 to improve the legibility of the results.\nprcnt_black: the percent of the county that identified as Black.",
+    "text": "1.4 Data\nThe data used for this example is demographic and voting measures for all counties in the state of Louisiana in 2016 from the package regress3d. We could use data for all counties in the US, but limiting the analysis to Louisiana will highlight the differences in standard errors for Model \\(\\ref{ypredbyx1}\\) and Model \\(\\ref{ypredbyx1x2}\\).\n\nprcnt_GOP16: the percent of the county that voted for Donald Trump in 2016.\nmedian_income16_1k: median income measured in units of $1,000 to improve the legibility of the results.\nprcnt_black: the percent of the county that identified as Black.\n\n\nla_counties &lt;- subset(county_data, state_abbrv == \"LA\")",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Defining and Estimating the Nested Models</span>"
     ]
